@@ -6,7 +6,7 @@ const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 
 // input
-let keys = [];
+let keys = [], keyDowns = [], keyUps = [];
 let mouseX, mouseY;
 let mouseScroll = 0;
 let mouseDowns = [], mouseUps = [], mousePresseds = [];
@@ -14,6 +14,10 @@ let mouseClickedX, mouseClickedY;
 
 function isPressed(key) {
   return keys.indexOf(key) !== -1;
+}
+
+function isDown(key) {
+  return keyDowns.indexOf(key) !== -1;
 }
 
 function isClicked(button) {
@@ -28,6 +32,11 @@ function isMouseUp(button) {
   return mouseUps.indexOf(button) !== -1;
 }
 
+function tickKeyboard() {
+  keyDowns = [];
+  keyUps = [];
+}
+
 function tickMouse() {
   mouseDowns = [];
   mouseUps = [];
@@ -38,14 +47,16 @@ let camera = new Camera(0, 0, 10);
 let centerIndicator = new PositionIndicator(0, 0, 'white', 1, camera);
 let grid = new Grid(camera);
 
-let socket1 = new Socket(0, 0, Socket.INPUT, camera);
-let socket2 = new Socket(0, 0, Socket.INPUT, camera);
-let socket3 = new Socket(0, 0, Socket.OUTPUT, camera);
+let socket1 = new Socket(Socket.INPUT, camera);
+let socket2 = new Socket(Socket.INPUT, camera);
+let socket3 = new Socket(Socket.OUTPUT, camera);
+let component1 = new Component(0, 0, "TEST", camera, [socket1, socket2], [socket3]);
 
-let gameObjects = [
-  new Component(0, 0, "TEST", camera, [socket1, socket2], [socket3]),
-  new Wire(socket3, socket2, camera)
-];
+let socket4 = new Socket(Socket.INPUT, camera);
+let socket5 = new Socket(Socket.OUTPUT, camera);
+let component2 = new Component(10, 0, "WOW", camera, [socket4], [socket5]);
+
+let gameObjects = [component1, component2];
 
 // work mode
 const WM_ARRANGE = 'arrange';
@@ -167,6 +178,33 @@ function tickWorkMode() {
   }
 }
 
+function getClosestComponent(x, y) {
+  let closestDistance = Infinity;
+  let closestComponent = null;
+  function updateClosest(component) {
+    let dx = component.x + component.size / 2 - x;
+    let dy = component.y + component.size / 2 - y;
+    let distance = Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2));
+    if (distance < closestDistance) {
+      closestDistance = distance;
+      closestComponent = component;
+    }
+  }
+  gameObjects.forEach(object => {
+    if (object instanceof Component) {
+      updateClosest(object);
+    }
+  });
+  return closestComponent;
+}
+
+function tickComponentRotation() {
+  if (isDown('r')) {
+    let component = getClosestComponent(camera.getBoardX(mouseX), camera.getBoardY(mouseY));
+    component.setDirection((component.direction + 1) % 4);
+  }
+}
+
 // game logic
 function tick() {
   camera.tick();
@@ -177,7 +215,10 @@ function tick() {
   });
 
   tickWorkMode();
+  tickComponentRotation();
+
   tickMouse();
+  tickKeyboard();
 }
 
 function render() {
@@ -207,10 +248,12 @@ function resize() {
 
 function keyDown(event) {
   keys.push(event.key);
+  keyDowns.push(event.key);
 }
 
 function keyUp(event) {
   keys = keys.filter(key => key !== event.key);
+  keyUps.push(event.key);
 }
 
 function mouseMove(event) {

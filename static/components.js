@@ -5,9 +5,9 @@ class Socket {
   static OUTPUT = 'output';
   static INPUT = 'input';
 
-  constructor(x, y, role, camera) {
-    this.x = x;
-    this.y = y;
+  constructor(role, camera) {
+    this.x = 0;
+    this.y = 0;
     this.camera = camera;
     this.role = role;
 
@@ -46,16 +46,16 @@ class Socket {
 }
 
 const DIRECTION_UP = 0;
-const DIRECTION_LEFT = 1;
+const DIRECTION_RIGHT = 1;
 const DIRECTION_DOWN = 2;
-const DIRECTION_RIGHT = 3;
+const DIRECTION_LEFT = 3;
 
 class Component {
   static SIDE_PADDING = 2;
   static PADDING = 1;
   static BACKGROUND_COLOR = 'white';
   static BORDER_COLOR = 'black';
-  static DIRECTION_INDICATOR_COLOR = 'grey';
+  static DIRECTION_INDICATOR_COLOR = 'darkgrey';
   static TEXT_COLOR = 'black';
 
   constructor(x, y, name, camera, inSockets, outSockets) {
@@ -93,7 +93,7 @@ class Component {
       new CameraRectangle(this.x, this.y, this.size, this.size, Component.BACKGROUND_COLOR, this.camera),
       new CameraRectangle(this.x, this.y, this.size, this.size, Component.DIRECTION_INDICATOR_COLOR, this.camera),
       new CameraRectangleLine(this.x, this.y, this.size, this.size, Component.BORDER_COLOR, 0.3, this.camera),
-      new CameraText(this.x + this.size / 2, this.y + this.size / 2, this.name, Component.TEXT_COLOR, "Pretendard", 2, this.camera),
+      new CameraText(this.x + this.size / 2, this.y + this.size / 2, this.name, Component.TEXT_COLOR, "Pretendard", 1, this.camera),
     ];
 
     if (this.direction === DIRECTION_UP) {
