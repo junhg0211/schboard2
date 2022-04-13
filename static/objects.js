@@ -147,6 +147,7 @@ class CameraLine extends Line {
     this.realY = y;
     this.realX2 = x2;
     this.realY2 = y2;
+    this.realWidth = lineWidth;
   }
 
   tick() {
@@ -154,6 +155,7 @@ class CameraLine extends Line {
     this.y = this.camera.getScreenY(this.realY);
     this.x2 = this.camera.getScreenX(this.realX2);
     this.y2 = this.camera.getScreenY(this.realY2);
+    this.lineWidth = this.realWidth * this.camera.zoom;
   }
 }
 

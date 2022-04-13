@@ -163,3 +163,33 @@ class Component {
     this.outSockets.forEach(socket => socket.render());
   }
 }
+
+class Wire {
+  static ON_COLOR = 'lime';
+  static OFF_COLOR = 'grey';
+  static WIDTH = 0.3;
+
+  constructor(fromSocket, toSocket, camera) {
+    this.fromSocket = fromSocket;
+    this.toSocket = toSocket;
+    this.camera = camera;
+
+    this.surface = new CameraLine(0, 0, 0, 10, Wire.OFF_COLOR, Wire.WIDTH, this.camera);
+  }
+
+  setColorByFromSocket() {
+    this.surface.color = this.fromSocket.on ? Wire.ON_COLOR : Wire.OFF_COLOR;
+  }
+
+  tick() {
+    this.surface.realX = this.fromSocket.x;
+    this.surface.realY = this.fromSocket.y;
+    this.surface.realX2 = this.toSocket.x;
+    this.surface.realY2 = this.toSocket.y;
+    this.surface.tick();
+  }
+
+  render() {
+    this.surface.render();
+  }
+}
