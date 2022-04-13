@@ -15,6 +15,7 @@ function isPressed(key) {
 
 let camera = new Camera(0, 0, 10);
 let centerIndicator = new PositionIndicator(0, 0, 'white', 1, camera);
+let grid = new Grid(camera);
 
 let socket1 = new Socket(0, 0, camera);
 let socket2 = new Socket(0, 0, camera);
@@ -64,6 +65,8 @@ function tick() {
 function render() {
   ctx.fillStyle = BACKGROUND_COLOR;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  grid.render();
 
   centerIndicator.render();
   gameObjects.forEach(object => {

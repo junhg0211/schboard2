@@ -136,6 +136,14 @@ class Camera {
   getScreenY(y) {
     return canvas.height / 2 + (y - this.y) * this.zoom;
   }
+
+  getBoardX(x) {
+    return (x - canvas.width / 2) / this.zoom + this.x;
+  }
+
+  getBoardY(y) {
+    return (y - canvas.height / 2) / this.zoom + this.y;
+  }
 }
 
 class CameraLine extends Line {
@@ -242,6 +250,39 @@ class PositionIndicator extends Object {
     ctx.moveTo(x, y - length);
     ctx.lineTo(x, y + length);
     ctx.stroke();
+  }
+}
+
+class Grid {
+  static COLOR = "#264b3d";
+  static LINE_WIDTH = 0.1;  // units
+
+  constructor(camera) {
+    this.camera = camera;
+  }
+
+  render() {
+    let startX = this.camera.getScreenX(Math.ceil(this.camera.getBoardX(0)));
+    let startY = this.camera.getScreenY(Math.ceil(this.camera.getBoardY(0)));
+    let width = this.camera.zoom * Grid.LINE_WIDTH;
+
+    for (let x = startX; x < canvas.width; x += this.camera.zoom) {
+      ctx.beginPath();
+      ctx.strokeStyle = Grid.COLOR;
+      ctx.lineWidth = width;
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, canvas.height);
+      ctx.stroke();
+    }
+    for (let y = startY; y < canvas.height; y += this.camera.zoom) {
+      ctx.beginPath();
+      ctx.strokeStyle = Grid.COLOR;
+      ctx.lineWidth = width;
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(canvas.width, y);
+      ctx.stroke();
+    }
   }
 }
 
