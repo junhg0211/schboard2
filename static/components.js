@@ -2,11 +2,14 @@ class Socket {
   static ON_COLOR = 'red';
   static OFF_COLOR = 'black';
   static RADIUS = 0.3;
+  static OUTPUT = 'output';
+  static INPUT = 'input';
 
-  constructor(x, y, camera) {
+  constructor(x, y, role, camera) {
     this.x = x;
     this.y = y;
     this.camera = camera;
+    this.role = role;
 
     this.on = false;
 
@@ -28,7 +31,12 @@ class Socket {
     this.surface.realY = y;
   }
 
+  setHighlight(highlight) {
+    this.surface.realRadius = highlight ? Socket.RADIUS * 2 : Socket.RADIUS;
+  }
+
   tick() {
+    this.setHighlight(this === highlightedSocket || this === startSocket);
     this.surface.tick();
   }
 
@@ -187,6 +195,10 @@ class Wire {
 
   setColorByFromSocket() {
     this.surface.color = this.fromSocket.on ? Wire.ON_COLOR : Wire.OFF_COLOR;
+  }
+
+  isSameWith(another) {
+    return this.fromSocket === another.fromSocket && this.toSocket === another.toSocket;
   }
 
   tick() {

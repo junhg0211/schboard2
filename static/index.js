@@ -38,9 +38,9 @@ let camera = new Camera(0, 0, 10);
 let centerIndicator = new PositionIndicator(0, 0, 'white', 1, camera);
 let grid = new Grid(camera);
 
-let socket1 = new Socket(0, 0, camera);
-let socket2 = new Socket(0, 0, camera);
-let socket3 = new Socket(0, 0, camera);
+let socket1 = new Socket(0, 0, Socket.INPUT, camera);
+let socket2 = new Socket(0, 0, Socket.INPUT, camera);
+let socket3 = new Socket(0, 0, Socket.OUTPUT, camera);
 
 let gameObjects = [
   new Component(0, 0, "TEST", camera, [socket1, socket2], [socket3]),
@@ -63,6 +63,87 @@ function setWorkMode(workMode) {
 let floatingObject = null;
 let floatingObjectOriginalX = 0;
 let floatingObjectOriginalY = 0;
+function tickArrangeMode() {
+  let inGameX = camera.getBoardX(mouseX), inGameY = camera.getBoardY(mouseY);
+  if (isMouseDown(0)) {
+    gameObjects.forEach(object => {
+      if (object.x <= inGameX && inGameX <= object.x + object.size
+        && object.y <= inGameY && inGameY <= object.y + object.size) {
+        floatingObject = object;
+        floatingObjectOriginalX = object.x;
+        floatingObjectOriginalY = object.y;
+      }
+    });
+  } else if (isMouseUp(0)) {
+    if (floatingObject !== null && floatingObject !== undefined) {
+      let x = Math.round(floatingObject.x);
+      let y = Math.round(floatingObject.y);
+      floatingObject.setPos(x, y);
+      floatingObject = null;
+    }
+  }
+  if (floatingObject !== null && floatingObject !== undefined && isClicked(0)) {
+    let x = Math.round(floatingObjectOriginalX + inGameX - camera.getBoardX(mouseClickedX));
+    let y = Math.round(floatingObjectOriginalY + inGameY - camera.getBoardY(mouseClickedY));
+    floatingObject.setPos(x, y);
+  }
+}
+
+function getClosestSocket(boardX, boardY) {
+  let closestDistance = Infinity;
+  let closestSocket = null;
+  function updateClosest(socket) {
+    let distance = Math.sqrt(Math.pow(socket.x - boardX, 2) + Math.pow(socket.y - boardY, 2));
+    if (distance < closestDistance) {
+      closestDistance = distance;
+      closestSocket = socket;
+    }
+  }
+
+  gameObjects.forEach(object => {
+    if (object instanceof Component) {
+      object.inSockets.forEach(updateClosest);
+      object.outSockets.forEach(updateClosest);
+    }
+  });
+
+  return closestSocket;
+}
+
+let highlightedSocket = null;
+let startSocket = null;
+function tickWireMode() {
+  if (highlightedSocket !== null && isMouseUp(0) && startSocket !== highlightedSocket) {
+    if (startSocket.role === Socket.INPUT && highlightedSocket.role === Socket.OUTPUT) {
+      let temp = startSocket;
+      startSocket = highlightedSocket;
+      highlightedSocket = temp;
+    }
+    if (startSocket.role === Socket.OUTPUT && highlightedSocket.role === Socket.INPUT) {
+      let wire = new Wire(startSocket, highlightedSocket, camera);
+      let add = true;
+      gameObjects.forEach(object => {
+        if (object instanceof Wire && object.isSameWith(wire)) {
+          gameObjects.splice(gameObjects.indexOf(object), 1);
+          add = false;
+        }
+      });
+      if (add) {
+        gameObjects.push(wire);
+      }
+    }
+  }
+
+  if (isClicked(0)) {
+    highlightedSocket = getClosestSocket(camera.getBoardX(mouseX), camera.getBoardY(mouseY));
+    if (isMouseDown(0)) {
+      startSocket = highlightedSocket;
+    }
+  } else if (isMouseUp(0)) {
+    highlightedSocket = null;
+    startSocket = null;
+  }
+}
 
 /*
  * work mode keyboard shortcuts
@@ -71,31 +152,9 @@ function tickWorkMode() {
   let workMode = getWorkMode();
 
   if (workMode === WM_ARRANGE) {
-    let inGameX = camera.getBoardX(mouseX), inGameY = camera.getBoardY(mouseY);
-    if (isMouseDown(0)) {
-      for (let i in gameObjects) {
-        let object = gameObjects[i];
-        if (object.x <= inGameX && inGameX <= object.x + object.size
-          && object.y <= inGameY && inGameY <= object.y + object.size) {
-          floatingObject = object;
-          floatingObjectOriginalX = object.x;
-          floatingObjectOriginalY = object.y;
-        }
-      }
-    } else if (isMouseUp(0)) {
-      if (floatingObject !== null && floatingObject !== undefined) {
-        let x = Math.round(floatingObject.x);
-        let y = Math.round(floatingObject.y);
-        floatingObject.setPos(x, y);
-        floatingObject = null;
-      }
-    }
-    if (floatingObject !== null && floatingObject !== undefined && isClicked(0)) {
-      let x = Math.round(floatingObjectOriginalX + inGameX - camera.getBoardX(mouseClickedX));
-      let y = Math.round(floatingObjectOriginalY + inGameY - camera.getBoardY(mouseClickedY));
-      floatingObject.setPos(x, y);
-    }
+    tickArrangeMode();
   } else if (workMode === WM_WIRE) {
+    tickWireMode();
   } else if (workMode === WM_WIRE_ARRANGE) {
   }
 
