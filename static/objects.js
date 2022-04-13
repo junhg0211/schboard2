@@ -102,16 +102,16 @@ class Camera {
 
   tick() {
     let positionOffset = 50 / this.zoom;
-    if (keys.indexOf(Camera.UP_KEY) !== -1) {
+    if (isPressed(Camera.UP_KEY)) {
       this.y -= positionOffset;
     }
-    if (keys.indexOf(Camera.DOWN_KEY) !== -1) {
+    if (isPressed(Camera.DOWN_KEY)) {
       this.y += positionOffset;
     }
-    if (keys.indexOf(Camera.LEFT_KEY) !== -1) {
+    if (isPressed(Camera.LEFT_KEY)) {
       this.x -= positionOffset;
     }
-    if (keys.indexOf(Camera.RIGHT_KEY) !== -1) {
+    if (isPressed(Camera.RIGHT_KEY)) {
       this.x += positionOffset;
     }
 

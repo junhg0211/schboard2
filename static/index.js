@@ -9,6 +9,10 @@ let keys = [];
 let mouseX, mouseY;
 let mouseScroll = 0;
 
+function isPressed(key) {
+  return keys.indexOf(key) !== -1;
+}
+
 let camera = new Camera(0, 0, 10);
 let gameObjects = [
   new Component(0, 0, "TEST", camera, [
@@ -20,8 +24,29 @@ let gameObjects = [
   new PositionIndicator(0, 0, 'white', 1, camera),
 ];
 
+const WM_ARRANGE = 'arrange';
+const WM_WIRE = 'wire';
+const WM_WIRE_ARRANGE = 'wire_arrange';
+
 function getWorkMode() {
   return document.querySelector("input[name='work_mode']:checked").value;
+}
+
+function setWorkMode(workMode) {
+  document.querySelector(`input[name='work_mode'][value='${workMode}']`).checked = true;
+}
+
+/*
+ * work mode keyboard shortcuts
+ */
+function tickWorkMode() {
+  if (isPressed('v')) {
+    setWorkMode(WM_ARRANGE);
+  } else if (isPressed('e')) {
+    setWorkMode(WM_WIRE);
+  } else if (isPressed('q')) {
+    setWorkMode(WM_WIRE_ARRANGE);
+  }
 }
 
 function tick() {
@@ -29,6 +54,7 @@ function tick() {
   gameObjects.forEach(object => {
     object.tick();
   });
+  tickWorkMode();
 }
 
 function render() {
