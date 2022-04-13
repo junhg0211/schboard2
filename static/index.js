@@ -9,7 +9,7 @@ const ctx = canvas.getContext("2d");
 let keys = [], keyDowns = [], keyUps = [];
 let mouseX, mouseY;
 let mouseScroll = 0;
-let mouseDowns = [], mouseUps = [], mousePresseds = [];
+let mouseDowns = [], mouseUps = [], mousePresseds = [], doubleClicks = [];
 let mouseClickedX, mouseClickedY;
 
 function isPressed(key) {
@@ -32,14 +32,16 @@ function isMouseUp(button) {
   return mouseUps.indexOf(button) !== -1;
 }
 
-function tickKeyboard() {
-  keyDowns = [];
-  keyUps = [];
+function isDoubleClicked(button) {
+  return doubleClicks.indexOf(button) !== -1;
 }
 
-function tickMouse() {
+function tickInput() {
+  keyDowns = [];
+  keyUps = [];
   mouseDowns = [];
   mouseUps = [];
+  doubleClicks = [];
 }
 
 // objects
@@ -217,8 +219,7 @@ function tick() {
   tickWorkMode();
   tickComponentRotation();
 
-  tickMouse();
-  tickKeyboard();
+  tickInput();
 }
 
 function render() {
@@ -268,6 +269,10 @@ function mouseDown(event) {
   mouseClickedY = mouseY;
 }
 
+function doubleClick(event) {
+  doubleClicks.push(event.button);
+}
+
 function mouseUp(event) {
   mouseUps.push(event.button);
   mousePresseds = mousePresseds.filter(button => button !== event.button);
@@ -282,6 +287,7 @@ window.addEventListener("keydown", keyDown);
 window.addEventListener("keyup", keyUp);
 window.addEventListener("mousemove", mouseMove);
 window.addEventListener("mousedown", mouseDown)
+window.addEventListener('dblclick', doubleClick)
 window.addEventListener("mouseup", mouseUp);
 window.addEventListener("wheel", wheel);
 
