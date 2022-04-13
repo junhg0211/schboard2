@@ -163,25 +163,3 @@ class Component {
     this.outSockets.forEach(socket => socket.render());
   }
 }
-
-class Tab {
-  constructor(camera) {
-    this.camera = camera;
-
-    this.components = [];
-    this.active = false;
-  }
-
-  addComponent(component) {
-    this.components.push(component);
-    return this;
-  }
-
-  tick() {
-    this.components.forEach(component => component.tick());
-  }
-
-  render() {
-    this.components.forEach(component => component.render());
-  }
-}
