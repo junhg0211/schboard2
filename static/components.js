@@ -67,6 +67,12 @@ class Component {
     this.reposition();
   }
 
+  setPos(x, y) {
+    this.x = x;
+    this.y = y;
+    this.reposition();
+  }
+
   setDirection(direction) {
     this.direction = direction;
     this.reposition();
@@ -149,6 +155,8 @@ class Component {
         );
       }
     }
+
+    this.surfaces.forEach(surface => surface.tick());
   }
 
   tick() {
