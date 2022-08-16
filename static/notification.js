@@ -1,3 +1,7 @@
+/*
+ * `notification.js` is for the notification popup that appears at the center of the screen.
+ */
+
 const notification = document.getElementsByClassName("notification")[0];
 const title = document.getElementsByClassName("notification--title")[0];
 const content = document.getElementsByClassName("notification--content")[0];

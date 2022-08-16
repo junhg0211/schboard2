@@ -1,3 +1,7 @@
+/*
+ * Socket attached to `Components`.
+ * `Wire` will be connected to the sockets, and communicate with other `Components`.
+ */
 class Socket {
   static ON_COLOR = 'red';
   static OFF_COLOR = 'black';
@@ -50,6 +54,12 @@ const DIRECTION_RIGHT = 1;
 const DIRECTION_DOWN = 2;
 const DIRECTION_LEFT = 3;
 
+/*
+ * Basic `Component` object.
+ *
+ * `Component`s are units of a logic in the circuit.
+ * They can be connected to other `Component`s to form a circuit.
+ */
 class Component {
   static SIDE_PADDING = 2;
   static PADDING = 1;
@@ -87,8 +97,10 @@ class Component {
   }
 
   reposition() {
+    // calculate size according to the count of the sockets
     this.size = Math.max(this.inSockets.length, this.outSockets.length) + 2 * Component.SIDE_PADDING;
 
+    // these surfaces are used to draw the background of the component
     this.surfaces = [
       new CameraRectangle(this.x, this.y, this.size, this.size, Component.BACKGROUND_COLOR, this.camera),
       new CameraRectangle(this.x, this.y, this.size, this.size, Component.DIRECTION_INDICATOR_COLOR, this.camera),
@@ -114,6 +126,7 @@ class Component {
       this.surfaces[1].realWidth = Component.PADDING;
     }
 
+    // socket placement
     for (let i = 0; i < this.inSockets.length; i++) {
       let socket = this.inSockets[i];
       if (this.direction === DIRECTION_UP) {
@@ -180,6 +193,9 @@ class Component {
   }
 }
 
+/*
+ * `Wire` is a connection between two `Socket`s.
+ */
 class Wire {
   static ON_COLOR = 'lime';
   static OFF_COLOR = 'grey';

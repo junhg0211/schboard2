@@ -1,3 +1,11 @@
+/*
+ * `objects.js` is for the basic objects that will be shown on the screen.
+ */
+
+/*
+ * A basic Object class.
+ * Every object in the game inherits from this class.
+ */
 class Object {
   constructor(x, y) {
     this.x = x;
@@ -23,6 +31,9 @@ class Rectangle extends Object {
   }
 }
 
+/*
+ * `Rectangle`, but just its outline.
+ */
 class RectangleLine extends Rectangle {
   constructor(x, y, width, height, color, lineWidth) {
     super(x, y, width, height, color);
@@ -51,6 +62,9 @@ class Circle extends Object {
   }
 }
 
+/*
+ * `Line` object that connects two points.
+ */
 class Line extends Object {
   constructor(x, y, x2, y2, color, lineWidth) {
     super(x, y);
@@ -146,12 +160,15 @@ class Camera {
   }
 }
 
+/*
+ * A `Line` object that works on the Camera world.
+ */
 class CameraLine extends Line {
   constructor(x, y, x2, y2, color, lineWidth, camera) {
     super(x, y, x2, y2, color, lineWidth);
     this.camera = camera;
 
-    this.realX = x;
+    this.realX = x;  // x coordinate in the camera world.
     this.realY = y;
     this.realX2 = x2;
     this.realY2 = y2;
@@ -167,7 +184,17 @@ class CameraLine extends Line {
   }
 }
 
-// noinspection DuplicatedCode
+/*
+ * Calculates x, y, width, height of a rectangle that contains all the given points
+ * according to the `Camera`.
+ */
+function adaptCameraPosition(object, camera) {
+  object.x = object.camera.getScreenX(object.realX);
+  object.y = object.camera.getScreenY(object.realY);
+  object.width = object.realWidth * camera.zoom;
+  object.height = object.realHeight * camera.zoom;
+}
+
 class CameraRectangle extends Rectangle {
   constructor(x, y, width, height, color, camera) {
     super(x, y, width, height, color);
@@ -180,14 +207,13 @@ class CameraRectangle extends Rectangle {
   }
 
   tick() {
-    this.x = this.camera.getScreenX(this.realX);
-    this.y = this.camera.getScreenY(this.realY);
-    this.width = this.realWidth * this.camera.zoom;
-    this.height = this.realHeight * this.camera.zoom;
+    adaptCameraPosition(this, this.camera);
   }
 }
 
-// noinspection DuplicatedCode
+/*
+ * A `RectangleLine` object that works on the Camera world.
+ */
 class CameraRectangleLine extends RectangleLine {
   constructor(x, y, width, height, color, lineWidth, camera) {
     super(x, y, width, height, color, lineWidth);
@@ -201,14 +227,14 @@ class CameraRectangleLine extends RectangleLine {
   }
 
   tick() {
-    this.x = this.camera.getScreenX(this.realX);
-    this.y = this.camera.getScreenY(this.realY);
-    this.width = this.realWidth * this.camera.zoom;
-    this.height = this.realHeight * this.camera.zoom;
+    adaptCameraPosition(this, this.camera);
     this.lineWidth = this.realLineWidth * this.camera.zoom;
   }
 }
 
+/*
+ * A `Circle` object that works on the Camera world.
+ */
 class CameraCircle extends Circle {
   constructor(x, y, radius, color, camera) {
     super(x, y, radius, color);
@@ -226,6 +252,9 @@ class CameraCircle extends Circle {
   }
 }
 
+/*
+ * Camera world position indicator.
+ */
 class PositionIndicator extends Object {
   constructor (x, y, color, length, camera) {
     super(x, y);
@@ -253,6 +282,9 @@ class PositionIndicator extends Object {
   }
 }
 
+/*
+ * Grid for the Camera world.
+ */
 class Grid {
   static COLOR = "#264b3d";
   static LINE_WIDTH = 0.1;  // units
@@ -266,6 +298,7 @@ class Grid {
     let startY = this.camera.getScreenY(Math.ceil(this.camera.getBoardY(0)));
     let width = this.camera.zoom * Grid.LINE_WIDTH;
 
+    if (this.camera.zoom < 5) return;
     for (let x = startX; x < canvas.width; x += this.camera.zoom) {
       ctx.beginPath();
       ctx.strokeStyle = Grid.COLOR;
@@ -286,6 +319,9 @@ class Grid {
   }
 }
 
+/*
+ * A `Text` object that works on the Camera world.
+ */
 class CameraText extends Text {
   constructor(x, y, text, color, font, size, camera) {
     super(x, y, text, color, font, size);

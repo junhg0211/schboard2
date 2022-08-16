@@ -1,3 +1,7 @@
+/*
+ * `index.js` is for the main game loop and event handlers.
+ */
+
 const FPS = 60;
 
 const BACKGROUND_COLOR = "#163b2d";
@@ -49,14 +53,18 @@ let camera = new Camera(0, 0, 10);
 let centerIndicator = new PositionIndicator(0, 0, 'white', 1, camera);
 let grid = new Grid(camera);
 
-let socket1 = new Socket(Socket.INPUT, camera);
-let socket2 = new Socket(Socket.INPUT, camera);
-let socket3 = new Socket(Socket.OUTPUT, camera);
-let component1 = new Component(0, 0, "TEST", camera, [socket1, socket2], [socket3]);
+// test
+let component1 = new Component(
+    0, 0, "TEST", camera,
+    [new Socket(Socket.INPUT, camera), new Socket(Socket.INPUT, camera)],
+    [new Socket(Socket.OUTPUT, camera), new Socket(Socket.OUTPUT, camera)]
+);
 
-let socket4 = new Socket(Socket.INPUT, camera);
-let socket5 = new Socket(Socket.OUTPUT, camera);
-let component2 = new Component(10, 0, "WOW", camera, [socket4], [socket5]);
+let component2 = new Component(
+    10, 0, "WOW", camera,
+    [new Socket(Socket.INPUT, camera), new Socket(Socket.INPUT, camera)],
+    [new Socket(Socket.OUTPUT, camera), new Socket(Socket.OUTPUT, camera)]
+);
 
 let gameObjects = [component1, component2];
 
@@ -142,6 +150,7 @@ function tickWireMode() {
         }
       });
       if (add) {
+        // noinspection JSCheckFunctionSignatures
         gameObjects.push(wire);
       }
     }
@@ -246,21 +255,25 @@ function resize() {
   canvas.width = canvas.clientWidth;
   canvas.height = canvas.clientHeight;
 }
+window.addEventListener("resize", resize);
 
 function keyDown(event) {
   keys.push(event.key);
   keyDowns.push(event.key);
 }
+window.addEventListener("keydown", keyDown);
 
 function keyUp(event) {
   keys = keys.filter(key => key !== event.key);
   keyUps.push(event.key);
 }
+window.addEventListener("keyup", keyUp);
 
 function mouseMove(event) {
   mouseX = event.clientX - canvas.offsetLeft;
   mouseY = event.clientY - canvas.offsetTop;
 }
+window.addEventListener("mousemove", mouseMove);
 
 function mouseDown(event) {
   mouseDowns.push(event.button);
@@ -268,32 +281,30 @@ function mouseDown(event) {
   mouseClickedX = mouseX;
   mouseClickedY = mouseY;
 }
+window.addEventListener("mousedown", mouseDown)
 
 function doubleClick(event) {
   doubleClicks.push(event.button);
 }
+window.addEventListener('dblclick', doubleClick)
 
 function mouseUp(event) {
   mouseUps.push(event.button);
   mousePresseds = mousePresseds.filter(button => button !== event.button);
 }
+window.addEventListener("mouseup", mouseUp);
 
 function wheel(event) {
-  mouseScroll = event.wheelDelta;
+  mouseScroll = event.deltaY;
+  console.log(event);
 }
-
-window.addEventListener("resize", resize);
-window.addEventListener("keydown", keyDown);
-window.addEventListener("keyup", keyUp);
-window.addEventListener("mousemove", mouseMove);
-window.addEventListener("mousedown", mouseDown)
-window.addEventListener('dblclick', doubleClick)
-window.addEventListener("mouseup", mouseUp);
 window.addEventListener("wheel", wheel);
 
 // main loop
-init();
-setInterval(() => {
-  tick();
-  render();
-}, 1000 / FPS)
+window.addEventListener("load", () => {
+  init();
+  setInterval(() => {
+    tick();
+    render();
+  }, 1000 / FPS);
+});
