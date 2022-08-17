@@ -51,6 +51,8 @@ class Socket {
   }
 
   changeState(state) {
+    if (state === this.on) return;
+
     this.on = state;
     this.surface.color = state ? Socket.ON_COLOR : Socket.OFF_COLOR;
 
