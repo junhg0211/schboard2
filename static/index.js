@@ -226,7 +226,7 @@ function getClosestComponent(x, y) {
     let dx = component.x + component.size / 2 - x;
     let dy = component.y + component.size / 2 - y;
     let distance = Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2));
-    if (distance < closestDistance) {
+    if (distance <= closestDistance) {
       closestDistance = distance;
       closestComponent = component;
     }
