@@ -77,6 +77,7 @@ class Line extends Object {
   render() {
     ctx.strokeStyle = this.color;
     ctx.lineWidth = this.lineWidth;
+    ctx.lineCap = "round";
     ctx.beginPath();
     ctx.moveTo(this.x, this.y);
     ctx.lineTo(this.x2, this.y2);
