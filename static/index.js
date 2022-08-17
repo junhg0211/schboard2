@@ -318,7 +318,6 @@ window.addEventListener("mouseup", mouseUp);
 
 function wheel(event) {
   mouseScroll = event.deltaY;
-  console.log(event);
 }
 window.addEventListener("wheel", wheel);
 
