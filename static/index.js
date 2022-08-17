@@ -82,16 +82,26 @@ let startingCameraX, startingCameraY;
 function tickArrangeMode() {
   let inGameX = camera.getBoardX(mouseX), inGameY = camera.getBoardY(mouseY);
   if (isMouseDown(0)) {
-    gameObjects.forEach(object => {
+    // get a floating object
+    floatingObject = null;
+    for (let i = gameObjects.length - 1; i >= 0; i--) {
+      let object = gameObjects[i];
       if (object.x <= inGameX && inGameX <= object.x + object.size
-        && object.y <= inGameY && inGameY <= object.y + object.size) {
+          && object.y <= inGameY && inGameY <= object.y + object.size) {
         floatingObject = object;
         floatingObjectOriginalX = object.x;
         floatingObjectOriginalY = object.y;
+        break;
       }
-    });
+    }
+    // record the camera position at the mousedown
     startingCameraX = camera.x;
     startingCameraY = camera.y;
+    // get the floatingObject at the front glancing position
+    if (floatingObject) {
+      gameObjects.splice(gameObjects.indexOf(floatingObject), 1);
+      gameObjects.push(floatingObject);
+    }
   } else if (isMouseUp(0)) {
     if (floatingObject !== null && floatingObject !== undefined) {
       let x = Math.round(floatingObject.x);
