@@ -230,6 +230,19 @@ function tickComponentRotation() {
   }
 }
 
+/*
+ * ticks the deletion and creation of components
+ * like backspace to delete and o to OrComponent etc
+ */
+function tickComponentMakeDelete() {
+  if (isDown('Backspace') || isDown('Delete')) {
+    let component = getClosestComponent(camera.getBoardX(mouseX), camera.getBoardY(mouseY));
+    if (component !== null) {
+      component.delete();
+    }
+  }
+}
+
 // game logic
 function tick() {
   camera.tick();
@@ -238,6 +251,7 @@ function tick() {
 
   tickWorkMode();
   tickComponentRotation();
+  tickComponentMakeDelete();
 
   gameObjects.forEach(object => {
     object.tick();

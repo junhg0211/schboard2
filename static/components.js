@@ -212,6 +212,15 @@ class Component {
   }
 
   calculate() {}
+
+  delete() {
+    this.inSockets.forEach(socket => getConnectedWires(socket).forEach(wire => wire.delete()));
+    this.outSockets.forEach(socket => {
+      socket.changeState(false);
+      getConnectedWires(socket).forEach(wire => wire.delete());
+    });
+    gameObjects.splice(gameObjects.indexOf(this), 1);
+  }
 }
 
 let componentCalculationQueue = [];
@@ -259,6 +268,11 @@ class Wire {
     this.setColorByFromSocket();
 
     this.toSocket.changeState(this.on);
+  }
+
+  delete() {
+    this.toSocket.changeState(false);
+    gameObjects.splice(gameObjects.indexOf(this), 1);
   }
 }
 
