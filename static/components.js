@@ -223,7 +223,7 @@ class Component {
       socket.changeState(false);
       getConnectedWires(socket).forEach(wire => wire.delete());
     });
-    gameObjects.splice(gameObjects.indexOf(this), 1);
+    components.splice(components.indexOf(this), 1);
   }
 }
 
@@ -276,19 +276,17 @@ class Wire {
 
   delete() {
     this.toSocket.changeState(false);
-    gameObjects.splice(gameObjects.indexOf(this), 1);
+    wires.splice(wires.indexOf(this), 1);
   }
 }
 
 function getConnectedWires(socket) {
-  return gameObjects
-      .filter(obj => obj instanceof Wire)
+  return wires
       .filter(wire => wire.fromSocket === socket || wire.toSocket === socket);
 }
 
 function getConnectedComponent(socket) {
-  return gameObjects
-      .filter(obj => obj instanceof Component)
+  return components
       .find(component => component.inSockets.includes(socket) || component.outSockets.includes(socket));
 }
 

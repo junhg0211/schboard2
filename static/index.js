@@ -82,7 +82,8 @@ let centerIndicator = new PositionIndicator(0, 0, 'white', 1, camera);
 let grid = new Grid(camera);
 
 // components
-let gameObjects = [];
+let components = [];
+let wires = [];
 
 let calculationLimit = 2;
 let nextGameObjectId = 0;
@@ -110,8 +111,8 @@ function tickArrangeMode() {
   if (isMouseDown(0)) {
     // get a floating object
     floatingObject = null;
-    for (let i = gameObjects.length - 1; i >= 0; i--) {
-      let object = gameObjects[i];
+    for (let i = components.length - 1; i >= 0; i--) {
+      let object = components[i];
       if (object.x <= inGameX && inGameX <= object.x + object.size
           && object.y <= inGameY && inGameY <= object.y + object.size) {
         floatingObject = object;
@@ -125,8 +126,8 @@ function tickArrangeMode() {
     startingCameraY = camera.y;
     // get the floatingObject at the front glancing position
     if (floatingObject) {
-      gameObjects.splice(gameObjects.indexOf(floatingObject), 1);
-      gameObjects.push(floatingObject);
+      components.splice(components.indexOf(floatingObject), 1);
+      components.push(floatingObject);
     }
   } else if (isMouseUp(0)) {
     if (floatingObject !== null && floatingObject !== undefined) {
@@ -154,11 +155,9 @@ function getClosestSocket(boardX, boardY) {
     }
   }
 
-  gameObjects.forEach(object => {
-    if (object instanceof Component) {
-      object.inSockets.forEach(updateClosest);
-      object.outSockets.forEach(updateClosest);
-    }
+  components.forEach(object => {
+    object.inSockets.forEach(updateClosest);
+    object.outSockets.forEach(updateClosest);
   });
 
   return closestSocket;
@@ -182,9 +181,9 @@ function tickWireMode() {
       // check if wire is already existing,
       // if so, delete it
       let add = true;
-      gameObjects.forEach(object => {
-        if (object instanceof Wire && object.isSameWith(wire)) {
-          gameObjects.splice(gameObjects.indexOf(object), 1);
+      wires.forEach(object => {
+        if (object.isSameWith(wire)) {
+          wires.splice(wires.indexOf(object), 1);
           wire.toSocket.available = true;
           wire.toSocket.changeState(false);
           add = false;
@@ -197,15 +196,15 @@ function tickWireMode() {
         } else {
           // find a socket that already is connected to the toSocket
           // and delete it
-          gameObjects.forEach(object => {
-            if (object instanceof Wire && object.toSocket === wire.toSocket) {
-              gameObjects.splice(gameObjects.indexOf(object), 1);
+          wires.forEach(object => {
+            if (object.toSocket === wire.toSocket) {
+              wires.splice(wires.indexOf(object), 1);
             }
           });
         }
 
         // noinspection JSCheckFunctionSignatures
-        gameObjects.push(wire);
+        wires.push(wire);
         wire.calculate();
       }
     }
@@ -225,7 +224,6 @@ function tickWireMode() {
 
 let wireHighlight = new CameraCircle(0, 0, 0.5, "lime", camera);
 function tickWireArrangeMode() {
-  let wires = gameObjects.filter(object => object instanceof Wire);
   let boardX = camera.getBoardX(mouseX), boardY = camera.getBoardY(mouseY);
 
   let closestWire = null, closestDistance = Infinity;
@@ -282,10 +280,8 @@ function getClosestComponent(x, y) {
       closestComponent = component;
     }
   }
-  gameObjects.forEach(object => {
-    if (object instanceof Component) {
-      updateClosest(object);
-    }
+  components.forEach(object => {
+    updateClosest(object);
   });
   return closestComponent;
 }
@@ -312,17 +308,17 @@ function tickComponentMakeDelete() {
     let size = getComponentSizeBySocketCount(2);
     let x = Math.round(camera.getBoardX(mouseX) - size/2);
     let y = Math.round(camera.getBoardY(mouseY) - size/2);
-    gameObjects.push(new OrComponent(x, y, camera));
+    components.push(new OrComponent(x, y, camera));
   } else if (isDown('n')) {
     let size = getComponentSizeBySocketCount(1);
     let x = Math.round(camera.getBoardX(mouseX) - size/2);
     let y = Math.round(camera.getBoardY(mouseY) - size/2);
-    gameObjects.push(new NotComponent(x, y, camera));
+    components.push(new NotComponent(x, y, camera));
   } else if (isDown('1')) {
     let size = getComponentSizeBySocketCount(1);
     let x = Math.round(camera.getBoardX(mouseX) - size/2);
     let y = Math.round(camera.getBoardY(mouseY) - size/2);
-    gameObjects.push(new TrueComponent(x, y, camera));
+    components.push(new TrueComponent(x, y, camera));
   }
 }
 
@@ -334,9 +330,8 @@ function tick() {
   tickComponentRotation();
   tickComponentMakeDelete();
 
-  gameObjects.forEach(object => {
-    object.tick();
-  });
+  components.forEach(object => object.tick());
+  wires.forEach(wires => wires.tick());
   for (let i = 0; i < calculationLimit && componentCalculationQueue; i++) {
     let component = componentCalculationQueue.shift();
     if (component) {
@@ -354,9 +349,8 @@ function render() {
   grid.render();
 
   centerIndicator.render();
-  gameObjects.forEach(object => {
-    object.render();
-  });
+  components.forEach(component => component.render());
+  wires.forEach(wire => wire.render());
 
   if (getWorkMode() === WM_WIRE_ARRANGE) {
     wireHighlight.render();
