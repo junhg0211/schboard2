@@ -57,6 +57,7 @@ let grid = new Grid(camera);
 let gameObjects = [];
 
 let calculationLimit = 2;
+let nextGameObjectId = 0;
 
 // work mode
 const WM_ARRANGE = 'arrange';
