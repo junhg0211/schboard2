@@ -4,7 +4,15 @@
 
 // util functions
 
+function limit(t, a, b) {
+  return Math.min(Math.max(t, a), b);
+}
+
 function getClosestPointToSegment(x0, y0, x1, y1, x2, y2) {
+  if (x1 === x2) {
+    return [x1, limit(y0, y1, y2)];
+  }
+
   if (x2 < x1) {
     [x1, x2] = [x2, x1];
     [y1, y2] = [y2, y1];
