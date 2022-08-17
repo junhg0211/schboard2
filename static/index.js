@@ -228,7 +228,8 @@ function getClosestComponent(x, y) {
 function tickComponentRotation() {
   if (isDown('r')) {
     let component = getClosestComponent(camera.getBoardX(mouseX), camera.getBoardY(mouseY));
-    component.setDirection((component.direction + 1) % 4);
+    lastDirection = (component.direction + 1) % 4;
+    component.setDirection(lastDirection);
   }
 }
 
@@ -242,6 +243,21 @@ function tickComponentMakeDelete() {
     if (component !== null) {
       component.delete();
     }
+  } else if (isDown('o')) {
+    let size = getComponentSizeBySocketCount(2);
+    let x = Math.round(camera.getBoardX(mouseX) - size/2);
+    let y = Math.round(camera.getBoardY(mouseY) - size/2);
+    gameObjects.push(new OrComponent(x, y, camera));
+  } else if (isDown('n')) {
+    let size = getComponentSizeBySocketCount(1);
+    let x = Math.round(camera.getBoardX(mouseX) - size/2);
+    let y = Math.round(camera.getBoardY(mouseY) - size/2);
+    gameObjects.push(new NotComponent(x, y, camera));
+  } else if (isDown('1')) {
+    let size = getComponentSizeBySocketCount(1);
+    let x = Math.round(camera.getBoardX(mouseX) - size/2);
+    let y = Math.round(camera.getBoardY(mouseY) - size/2);
+    gameObjects.push(new TrueComponent(x, y, camera));
   }
 }
 

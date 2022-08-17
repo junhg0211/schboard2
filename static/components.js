@@ -70,6 +70,10 @@ const DIRECTION_RIGHT = 1;
 const DIRECTION_DOWN = 2;
 const DIRECTION_LEFT = 3;
 
+function getComponentSizeBySocketCount(count) {
+  return count + 2 * Component.SIDE_PADDING;
+}
+
 /*
  * Basic `Component` object.
  *
@@ -93,7 +97,7 @@ class Component {
     this.inSockets = inSockets;
     this.outSockets = outSockets;
 
-    this.direction = DIRECTION_UP;
+    this.direction = lastDirection;
     this.size = Component.SIDE_PADDING * 2;
 
     this.id = nextGameObjectId++;
@@ -116,7 +120,7 @@ class Component {
 
   reposition() {
     // calculate size according to the count of the sockets
-    this.size = Math.max(this.inSockets.length, this.outSockets.length) + 2 * Component.SIDE_PADDING;
+    this.size = getComponentSizeBySocketCount(Math.max(this.inSockets.length, this.outSockets.length));
 
     // these surfaces are used to draw the background of the component
     this.surfaces = [
