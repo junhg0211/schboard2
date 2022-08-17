@@ -2,6 +2,8 @@
  * `index.js` is for the main game loop and event handlers.
  */
 
+const menubarWidth = document.querySelector(".operation").clientWidth;
+
 const FPS = 60;
 
 const BACKGROUND_COLOR = "#163b2d";
@@ -311,6 +313,8 @@ function mouseMove(event) {
 window.addEventListener("mousemove", mouseMove);
 
 function mouseDown(event) {
+  if (event.clientX < menubarWidth) return;
+
   mouseDowns.push(event.button);
   mousePresseds.push(event.button);
   mouseClickedX = mouseX;

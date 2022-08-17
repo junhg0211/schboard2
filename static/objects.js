@@ -115,7 +115,7 @@ class Camera {
   }
 
   tick() {
-    let positionOffset = 50 / this.zoom;
+    let positionOffset = 10 / this.zoom;
     if (isPressed(Camera.UP_KEY)) {
       this.y -= positionOffset;
     }
@@ -129,17 +129,14 @@ class Camera {
       this.x += positionOffset;
     }
 
-    if (0 <= this.x && this.x <= canvas.width
-        && 0 <= this.y && this.y <= canvas.height) {
-      if (mouseScroll) {
-        this.zoom *= Math.exp(mouseScroll / 500);
-        mouseScroll = 0;
-      }
-      if (this.zoom < 1) {
-        this.zoom = 1;
-      } else if (this.zoom > 200) {
-        this.zoom = 200;
-      }
+    if (mouseScroll) {
+      this.zoom *= Math.exp(mouseScroll / 500);
+      mouseScroll = 0;
+    }
+    if (this.zoom < 1) {
+      this.zoom = 1;
+    } else if (this.zoom > 200) {
+      this.zoom = 200;
     }
   }
 
