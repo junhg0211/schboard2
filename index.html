@@ -35,6 +35,8 @@
         <h1>디버그</h1>
         <p>
             <button onclick="openNotification()">알림 창 열기</button>
+            <button onclick="(() => gameObjects.push(new TrueComponent(0, 0, camera)))()">항진 추가하기</button>
+            <button onclick="(() => gameObjects.push(new Component(0, 0, 'test', camera, [new Socket(Socket.INPUT, camera), new Socket(Socket.INPUT, camera)], [new Socket(Socket.OUTPUT, camera), new Socket(Socket.OUTPUT, camera)])))()">의미없는 요소 추가하기</button>
         </p>
     </div>
     <div class="board">

@@ -49,6 +49,21 @@ class Socket {
   render() {
     this.surface.render();
   }
+
+  changeState(state) {
+    this.on = state;
+    this.surface.color = state ? Socket.ON_COLOR : Socket.OFF_COLOR;
+
+    if (this.role === Socket.OUTPUT) {
+      let connectedWire = getConnectedWire(this);
+      if (connectedWire) {
+        connectedWire.calculate();
+      }
+    } else {
+      let connectedComponent = getConnectedComponent(this);
+      componentCalculationQueue.push(connectedComponent)
+    }
+  }
 }
 
 const DIRECTION_UP = 0;
@@ -85,6 +100,7 @@ class Component {
     this.surfaces = [];
 
     this.reposition();
+    this.calculate();
   }
 
   setPos(x, y) {
@@ -193,7 +209,11 @@ class Component {
     this.inSockets.forEach(socket => socket.render());
     this.outSockets.forEach(socket => socket.render());
   }
+
+  calculate() {}
 }
+
+let componentCalculationQueue = [];
 
 /*
  * `Wire` is a connection between two `Socket`s.
@@ -207,6 +227,8 @@ class Wire {
     this.fromSocket = fromSocket;
     this.toSocket = toSocket;
     this.camera = camera;
+
+    this.on = this.fromSocket.on;
 
     this.surface = new CameraLine(0, 0, 0, 10, Wire.OFF_COLOR, Wire.WIDTH, this.camera);
   }
@@ -229,5 +251,35 @@ class Wire {
 
   render() {
     this.surface.render();
+  }
+
+  calculate() {
+    this.on = this.fromSocket.on;
+    this.setColorByFromSocket();
+
+    this.toSocket.changeState(this.on);
+  }
+}
+
+function getConnectedWire(socket) {
+  // noinspection JSUnresolvedVariable
+  return gameObjects
+      .filter(obj => obj instanceof Wire)
+      .find(wire => wire.fromSocket === socket || wire.toSocket === socket);
+}
+
+function getConnectedComponent(socket) {
+  return gameObjects
+      .filter(obj => obj instanceof Component)
+      .find(component => component.inSockets.includes(socket) || component.outSockets.includes(socket));
+}
+
+class TrueComponent extends Component {
+  constructor(x, y, camera) {
+    super(x, y, "1", camera, [], [new Socket(Socket.OUTPUT, camera)]);
+  }
+
+  calculate() {
+    this.outSockets[0].changeState(true);
   }
 }

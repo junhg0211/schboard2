@@ -53,20 +53,10 @@ let camera = new Camera(0, 0, 10);
 let centerIndicator = new PositionIndicator(0, 0, 'white', 1, camera);
 let grid = new Grid(camera);
 
-// test
-let component1 = new Component(
-    0, 0, "TEST", camera,
-    [new Socket(Socket.INPUT, camera), new Socket(Socket.INPUT, camera)],
-    [new Socket(Socket.OUTPUT, camera), new Socket(Socket.OUTPUT, camera)]
-);
+// objects
+let gameObjects = [];
 
-let component2 = new Component(
-    10, 0, "WOW", camera,
-    [new Socket(Socket.INPUT, camera), new Socket(Socket.INPUT, camera)],
-    [new Socket(Socket.OUTPUT, camera), new Socket(Socket.OUTPUT, camera)]
-);
-
-let gameObjects = [component1, component2];
+let calculationLimit = 2;
 
 // work mode
 const WM_ARRANGE = 'arrange';
@@ -153,6 +143,7 @@ function tickWireMode() {
         if (object instanceof Wire && object.isSameWith(wire)) {
           gameObjects.splice(gameObjects.indexOf(object), 1);
           wire.toSocket.available = true;
+          wire.toSocket.changeState(false);
           add = false;
         }
       });
@@ -172,6 +163,7 @@ function tickWireMode() {
 
         // noinspection JSCheckFunctionSignatures
         gameObjects.push(wire);
+        wire.calculate();
       }
     }
   }
@@ -249,6 +241,12 @@ function tick() {
   gameObjects.forEach(object => {
     object.tick();
   });
+  for (let i = 0; i < calculationLimit && componentCalculationQueue; i++) {
+    let component = componentCalculationQueue.shift();
+    if (component) {
+      component.calculate();
+    }
+  }
 
   tickInput();
 }
