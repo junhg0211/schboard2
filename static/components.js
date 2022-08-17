@@ -283,3 +283,27 @@ class TrueComponent extends Component {
     this.outSockets[0].changeState(true);
   }
 }
+
+class NotComponent extends Component {
+  constructor(x, y, camera) {
+    super(x, y, "¬", camera, [new Socket(Socket.INPUT, camera)], [new Socket(Socket.OUTPUT, camera)]);
+  }
+
+  calculate() {
+    this.outSockets[0].changeState(!this.inSockets[0].on);
+  }
+}
+
+class OrComponent extends Component {
+  constructor(x, y, camera) {
+    super(
+        x, y, "∨", camera,
+        [new Socket(Socket.INPUT, camera), new Socket(Socket.INPUT, camera)],
+        [new Socket(Socket.OUTPUT, camera)]
+    );
+  }
+
+  calculate() {
+    this.outSockets[0].changeState(this.inSockets[0].on || this.inSockets[1].on);
+  }
+}
