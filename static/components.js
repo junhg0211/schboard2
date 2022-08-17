@@ -57,10 +57,7 @@ class Socket {
     this.surface.color = state ? Socket.ON_COLOR : Socket.OFF_COLOR;
 
     if (this.role === Socket.OUTPUT) {
-      let connectedWire = getConnectedWire(this);
-      if (connectedWire) {
-        connectedWire.calculate();
-      }
+      getConnectedWires(this).forEach(wire => wire.calculate());
     } else {
       let connectedComponent = getConnectedComponent(this);
       componentCalculationQueue.push(connectedComponent)
@@ -265,11 +262,10 @@ class Wire {
   }
 }
 
-function getConnectedWire(socket) {
-  // noinspection JSUnresolvedVariable
+function getConnectedWires(socket) {
   return gameObjects
       .filter(obj => obj instanceof Wire)
-      .find(wire => wire.fromSocket === socket || wire.toSocket === socket);
+      .filter(wire => wire.fromSocket === socket || wire.toSocket === socket);
 }
 
 function getConnectedComponent(socket) {
