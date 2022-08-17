@@ -78,6 +78,7 @@ function setWorkMode(workMode) {
 let floatingObject = null;
 let floatingObjectOriginalX = 0;
 let floatingObjectOriginalY = 0;
+let startingCameraX, startingCameraY;
 function tickArrangeMode() {
   let inGameX = camera.getBoardX(mouseX), inGameY = camera.getBoardY(mouseY);
   if (isMouseDown(0)) {
@@ -89,6 +90,8 @@ function tickArrangeMode() {
         floatingObjectOriginalY = object.y;
       }
     });
+    startingCameraX = camera.x;
+    startingCameraY = camera.y;
   } else if (isMouseUp(0)) {
     if (floatingObject !== null && floatingObject !== undefined) {
       let x = Math.round(floatingObject.x);
@@ -98,8 +101,8 @@ function tickArrangeMode() {
     }
   }
   if (floatingObject !== null && floatingObject !== undefined && isClicked(0)) {
-    let x = Math.round(floatingObjectOriginalX + inGameX - camera.getBoardX(mouseClickedX));
-    let y = Math.round(floatingObjectOriginalY + inGameY - camera.getBoardY(mouseClickedY));
+    let x = Math.round(floatingObjectOriginalX + inGameX - camera.getBoardX(mouseClickedX) - startingCameraX + camera.x);
+    let y = Math.round(floatingObjectOriginalY + inGameY - camera.getBoardY(mouseClickedY) - startingCameraY + camera.y);
     floatingObject.setPos(x, y);
   }
 }
