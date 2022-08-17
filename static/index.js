@@ -134,28 +134,49 @@ function getClosestSocket(boardX, boardY) {
 let highlightedSocket = null;
 let startSocket = null;
 function tickWireMode() {
+  // if mouseUp
   if (highlightedSocket !== null && isMouseUp(0) && startSocket !== highlightedSocket) {
+    // swap INPUT -> OUTPUT to OUTPUT -> INPUT
     if (startSocket.role === Socket.INPUT && highlightedSocket.role === Socket.OUTPUT) {
       let temp = startSocket;
       startSocket = highlightedSocket;
       highlightedSocket = temp;
     }
+
     if (startSocket.role === Socket.OUTPUT && highlightedSocket.role === Socket.INPUT) {
       let wire = new Wire(startSocket, highlightedSocket, camera);
+
+      // check if wire is already existing,
+      // if so, delete it
       let add = true;
       gameObjects.forEach(object => {
         if (object instanceof Wire && object.isSameWith(wire)) {
           gameObjects.splice(gameObjects.indexOf(object), 1);
+          wire.toSocket.available = true;
           add = false;
         }
       });
+      // otherwise, add it
       if (add) {
+        if (wire.toSocket.available) {
+          wire.toSocket.available = false;
+        } else {
+          // find a socket that already is connected to the toSocket
+          // and delete it
+          gameObjects.forEach(object => {
+            if (object instanceof Wire && object.toSocket === wire.toSocket) {
+              gameObjects.splice(gameObjects.indexOf(object), 1);
+            }
+          });
+        }
+
         // noinspection JSCheckFunctionSignatures
         gameObjects.push(wire);
       }
     }
   }
 
+  // click socket highlighting
   if (isClicked(0)) {
     highlightedSocket = getClosestSocket(camera.getBoardX(mouseX), camera.getBoardY(mouseY));
     if (isMouseDown(0)) {
@@ -221,12 +242,13 @@ function tick() {
   camera.tick();
 
   centerIndicator.render();
-  gameObjects.forEach(object => {
-    object.tick();
-  });
 
   tickWorkMode();
   tickComponentRotation();
+
+  gameObjects.forEach(object => {
+    object.tick();
+  });
 
   tickInput();
 }

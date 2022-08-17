@@ -15,6 +15,8 @@ class Socket {
     this.camera = camera;
     this.role = role;
 
+    // noinspection JSUnusedGlobalSymbols
+    this.available = true;
     this.on = false;
 
     this.surface = new CameraCircle(this.x, this.y, Socket.RADIUS, Socket.OFF_COLOR, this.camera);
