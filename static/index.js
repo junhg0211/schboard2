@@ -55,11 +55,12 @@ let camera = new Camera(0, 0, 10);
 let centerIndicator = new PositionIndicator(0, 0, 'white', 1, camera);
 let grid = new Grid(camera);
 
-// objects
+// components
 let gameObjects = [];
 
 let calculationLimit = 2;
 let nextGameObjectId = 0;
+let lastDirection = 0;
 
 // work mode
 const WM_ARRANGE = 'arrange';
