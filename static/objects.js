@@ -248,6 +248,12 @@ class CameraCircle extends Circle {
     this.y = this.camera.getScreenY(this.realY);
     this.radius = this.realRadius * this.camera.zoom;
   }
+
+  setPos(x, y) {
+    this.realX = x;
+    this.realY = y;
+    this.tick();
+  }
 }
 
 /*

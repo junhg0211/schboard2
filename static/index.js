@@ -2,6 +2,32 @@
  * `index.js` is for the main game loop and event handlers.
  */
 
+// util functions
+
+function getClosestPointToSegment(x0, y0, x1, y1, x2, y2) {
+  if (x2 < x1) {
+    [x1, x2] = [x2, x1];
+    [y1, y2] = [y2, y1];
+  }
+  let tanL = (y2 - y1) / (x2 - x1);
+  let tanM = -1 / tanL;
+  let x = (x0 * tanM - y0 - x1 * tanL + y1) / (tanM - tanL);
+  let y = tanL * (x - x1) + y1;
+  if (x < x1) {
+    return [x1, y1];
+  } else if (x > x2) {
+    return [x2, y2];
+  } else {
+    return [x, y];
+  }
+}
+
+function getDistanceToSegment(x0, y0, x1, y1, x2, y2) {
+  let [x, y] = getClosestPointToSegment(x0, y0, x1, y1, x2, y2);
+  return Math.sqrt(Math.pow(x - x0, 2) + Math.pow(y - y0, 2));
+}
+
+// general variable
 const menubarWidth = document.querySelector(".operation").clientWidth;
 
 const FPS = 60;
@@ -197,6 +223,30 @@ function tickWireMode() {
   }
 }
 
+let wireHighlight = new CameraCircle(0, 0, 0.5, "lime", camera);
+function tickWireArrangeMode() {
+  let wires = gameObjects.filter(object => object instanceof Wire);
+  let boardX = camera.getBoardX(mouseX), boardY = camera.getBoardY(mouseY);
+
+  let closestWire = null, closestDistance = Infinity;
+  for (let i = 0; i < wires.length; i++) {
+    let wire = wires[i];
+    let distance = getDistanceToSegment(
+      boardX, boardY, wire.fromSocket.x, wire.fromSocket.y, wire.toSocket.x, wire.toSocket.y);
+    if (distance < closestDistance) {
+      closestDistance = distance;
+      closestWire = wire;
+    }
+  }
+
+  let [closestWireX, closestWireY] = getClosestPointToSegment(
+    boardX, boardY,
+    closestWire.fromSocket.x, closestWire.fromSocket.y,
+    closestWire.toSocket.x, closestWire.toSocket.y
+  );
+  wireHighlight.setPos(closestWireX, closestWireY);
+}
+
 /*
  * work mode keyboard shortcuts
  */
@@ -208,6 +258,7 @@ function tickWorkMode() {
   } else if (workMode === WM_WIRE) {
     tickWireMode();
   } else if (workMode === WM_WIRE_ARRANGE) {
+    tickWireArrangeMode();
   }
 
   if (isPressed('v')) {
@@ -279,8 +330,6 @@ function tickComponentMakeDelete() {
 function tick() {
   camera.tick();
 
-  centerIndicator.render();
-
   tickWorkMode();
   tickComponentRotation();
   tickComponentMakeDelete();
@@ -308,6 +357,11 @@ function render() {
   gameObjects.forEach(object => {
     object.render();
   });
+
+  if (getWorkMode() === WM_WIRE_ARRANGE) {
+    wireHighlight.render();
+    console.log("Hello");
+  }
 }
 
 /*
