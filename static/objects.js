@@ -108,37 +108,43 @@ class Camera {
   static DOWN_KEY = 's';
   static LEFT_KEY = 'a';
   static RIGHT_KEY = 'd';
+  static movingInterpolation = 1/6;
 
   constructor(x, y, zoom) {
     this.x = x;
     this.y = y;
     this.zoom = zoom;
+
+    this.targetX = x;
+    this.targetY = y;
+    this.targetZoom = zoom;
   }
 
   tick() {
     let positionOffset = 10 / this.zoom;
     if (isPressed(Camera.UP_KEY)) {
-      this.y -= positionOffset;
+      this.targetY -= positionOffset;
     }
     if (isPressed(Camera.DOWN_KEY)) {
-      this.y += positionOffset;
+      this.targetY += positionOffset;
     }
     if (isPressed(Camera.LEFT_KEY)) {
-      this.x -= positionOffset;
+      this.targetX -= positionOffset;
     }
     if (isPressed(Camera.RIGHT_KEY)) {
-      this.x += positionOffset;
+      this.targetX += positionOffset;
     }
 
     if (mouseScroll) {
-      this.zoom *= Math.exp(mouseScroll / 500);
+      this.targetZoom *= Math.exp(mouseScroll / 500);
       mouseScroll = 0;
     }
-    if (this.zoom < 1) {
-      this.zoom = 1;
-    } else if (this.zoom > 200) {
-      this.zoom = 200;
-    }
+
+    this.targetZoom = limit(this.targetZoom, 1, 200)
+
+    this.x = lerp(this.x, this.targetX, Camera.movingInterpolation);
+    this.y = lerp(this.y, this.targetY, Camera.movingInterpolation);
+    this.zoom = lerp(this.zoom, this.targetZoom, Camera.movingInterpolation);
   }
 
   getScreenX(x) {

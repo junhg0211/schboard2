@@ -40,6 +40,10 @@ function getDistanceToSegment(x0, y0, x1, y1, x2, y2) {
   return Math.sqrt(Math.pow(x - x0, 2) + Math.pow(y - y0, 2));
 }
 
+function lerp(a, b, t) {
+  return a + (b - a) * t;
+}
+
 // general variable
 const menubarWidth = document.querySelector(".operation").clientWidth;
 
@@ -316,8 +320,8 @@ function tickDragMode() {
   }
 
   if (isClicked(0)) {
-    camera.x -= (mouseX - mouseAnchorX) / camera.zoom;
-    camera.y -= (mouseY - mouseAnchorY) / camera.zoom;
+    camera.targetX -= (mouseX - mouseAnchorX) / camera.zoom;
+    camera.targetY -= (mouseY - mouseAnchorY) / camera.zoom;
     mouseAnchorX = mouseX;
     mouseAnchorY = mouseY;
   }
@@ -333,7 +337,7 @@ function tickZoomMode() {
     let dx = mouseX - mouseAnchorX;
     let dy = mouseY - mouseAnchorY;
 
-    camera.zoom *= Math.exp((dx + dy) / 500);
+    camera.targetZoom *= Math.exp((dx + dy) / 500);
 
     mouseAnchorX = mouseX;
     mouseAnchorY = mouseY;
@@ -537,6 +541,12 @@ calculationLimitInput.addEventListener("change", (event) => {
   calculationLimit = event.target.value;
 });
 calculationLimitInput.value = calculationLimit;
+
+const frictionInterpolationRange = document.querySelector("#friction-interpolation");
+frictionInterpolationRange.addEventListener("change", (event) => {
+  Camera.movingInterpolation = event.target.value / 100;
+});
+frictionInterpolationRange.value = Camera.movingInterpolation * 100;
 
 // main loop
 window.addEventListener("load", () => {
