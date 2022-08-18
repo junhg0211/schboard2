@@ -148,6 +148,8 @@ let lastDirection = 0;
 const WM_ARRANGE = 'arrange';
 const WM_WIRE = 'wire';
 const WM_WIRE_ARRANGE = 'wire_arrange';
+const WM_DRAG = 'drag';
+const WM_ZOOM = 'zoom';
 
 function getWorkMode() {
   return document.querySelector("input[name='work_mode']:checked").value;
@@ -300,6 +302,38 @@ function tickWireArrangeMode() {
   wireHighlight.setPos(closestWireX, closestWireY);
 }
 
+let mouseAnchorX, mouseAnchorY;
+function tickDragMode() {
+  if (isMouseDown(0)) {
+    mouseAnchorX = mouseX;
+    mouseAnchorY = mouseY;
+  }
+
+  if (isClicked(0)) {
+    camera.x -= (mouseX - mouseAnchorX) / camera.zoom;
+    camera.y -= (mouseY - mouseAnchorY) / camera.zoom;
+    mouseAnchorX = mouseX;
+    mouseAnchorY = mouseY;
+  }
+}
+
+function tickZoomMode() {
+  if (isMouseDown(0)) {
+    mouseAnchorX = mouseX;
+    mouseAnchorY = mouseY;
+  }
+
+  if (isClicked(0)) {
+    let dx = mouseX - mouseAnchorX;
+    let dy = mouseY - mouseAnchorY;
+
+    camera.zoom *= Math.exp((dx + dy) / 500);
+
+    mouseAnchorX = mouseX;
+    mouseAnchorY = mouseY;
+  }
+}
+
 /*
  * work mode keyboard shortcuts
  */
@@ -312,6 +346,10 @@ function tickWorkMode() {
     tickWireMode();
   } else if (workMode === WM_WIRE_ARRANGE) {
     tickWireArrangeMode();
+  } else if (workMode === WM_DRAG) {
+    tickDragMode();
+  } else if (workMode === WM_ZOOM) {
+    tickZoomMode();
   }
 
   if (isPressed('v')) {
@@ -320,6 +358,10 @@ function tickWorkMode() {
     setWorkMode(WM_WIRE);
   } else if (isPressed('q')) {
     setWorkMode(WM_WIRE_ARRANGE);
+  } else if (isPressed('h')) {
+    setWorkMode(WM_DRAG);
+  } else if (isPressed('z')) {
+    setWorkMode(WM_ZOOM);
   }
 }
 
