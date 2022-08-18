@@ -283,7 +283,7 @@ function tickWireMode() {
   }
 }
 
-let wireHighlight = new CameraCircle(0, 0, 0.5, "lime", camera);
+let wireHighlight = new CameraCircle(NaN, NaN, 0.5, "lime", camera);
 function tickWireArrangeMode() {
   let boardX = camera.getBoardX(mouseX), boardY = camera.getBoardY(mouseY);
 
@@ -298,12 +298,14 @@ function tickWireArrangeMode() {
     }
   }
 
-  let [closestWireX, closestWireY] = getClosestPointToSegment(
-    boardX, boardY,
-    closestWire.fromSocket.x, closestWire.fromSocket.y,
-    closestWire.toSocket.x, closestWire.toSocket.y
-  );
-  wireHighlight.setPos(closestWireX, closestWireY);
+  if (wires.length > 0) {
+    let [closestWireX, closestWireY] = getClosestPointToSegment(
+      boardX, boardY,
+      closestWire.fromSocket.x, closestWire.fromSocket.y,
+      closestWire.toSocket.x, closestWire.toSocket.y
+    );
+    wireHighlight.setPos(closestWireX, closestWireY);
+  }
 }
 
 let mouseAnchorX, mouseAnchorY;
