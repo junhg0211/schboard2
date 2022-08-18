@@ -24,6 +24,21 @@ html, body, .main-container {
     overflow: scroll;
 }
 
+.setting {
+    display: flex;
+}
+
+.setting p {
+    min-width: 40%;
+}
+.setting label {
+    min-width: 60%;
+}
+
+.setting input {
+    width: 100%;
+}
+
 .board {
     flex: 1;
     display: flex;

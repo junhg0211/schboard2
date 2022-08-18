@@ -428,6 +428,12 @@ function wheel(event) {
 }
 window.addEventListener("wheel", wheel);
 
+const calculationLimitInput = document.querySelector("#calculation-limit");
+calculationLimitInput.addEventListener("change", (event) => {
+  calculationLimit = event.target.value;
+});
+calculationLimitInput.value = calculationLimit;
+
 // main loop
 window.addEventListener("load", () => {
   init();
