@@ -364,7 +364,7 @@ function tickComponentMakeDelete() {
     let x = Math.round(camera.getBoardX(mouseX) - size/2);
     let y = Math.round(camera.getBoardY(mouseY) - size/2);
     components.push(new OrComponent(x, y, camera));
-  } else if (isDown('n')) {
+  } else if (isDown('t')) {
     let size = getComponentSizeBySocketCount(1);
     let x = Math.round(camera.getBoardX(mouseX) - size/2);
     let y = Math.round(camera.getBoardY(mouseY) - size/2);
