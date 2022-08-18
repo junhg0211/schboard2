@@ -98,6 +98,8 @@ let grid = new Grid(camera);
 let tabs = [], nowTab = "Untitled";
 let components = null, wires = null;
 
+let tabList = document.querySelector("#tab-list");
+
 function newTab(title) {
   return {
     name: title,
@@ -114,6 +116,10 @@ function getTab(name) {
 function createTab(name) {
   let tab = newTab(name);
   tabs.push(tab);
+  let li = document.createElement("li");
+  li.innerText = name;
+  li.onclick = () => changeTab(name);
+  tabList.appendChild(li);
   return tab;
 }
 
