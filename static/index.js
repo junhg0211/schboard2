@@ -94,10 +94,46 @@ let camera = new Camera(0, 0, 10);
 let centerIndicator = new PositionIndicator(0, 0, 'white', 1, camera);
 let grid = new Grid(camera);
 
-// components
-let components = [];
-let wires = [];
+// tabs
+let tabs = [], nowTab = "Untitled";
+let components = null, wires = null;
 
+function newTab(title) {
+  return {
+    name: title,
+    components: [],
+    wires: [],
+    componentCalculationQueue: [],
+  };
+}
+
+function getTab(name) {
+  return tabs.find(tab => tab.name === name);
+}
+
+function createTab(name) {
+  let tab = newTab(name);
+  tabs.push(tab);
+  return tab;
+}
+
+const pathDiv = document.querySelector(".path");
+
+function changeTab(name) {
+  nowTab = name;
+
+  let tab = getTab(name);
+  components = tab.components;
+  wires = tab.wires;
+  componentCalculationQueue = tab.componentCalculationQueue;
+
+  pathDiv.innerText = name;
+}
+
+createTab(nowTab);
+changeTab(nowTab);
+
+// settings
 let calculationLimit = 2;
 let nextGameObjectId = 0;
 let lastDirection = 0;

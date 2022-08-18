@@ -227,7 +227,7 @@ class Component {
   }
 }
 
-let componentCalculationQueue = [];
+let componentCalculationQueue = null;
 
 /*
  * `Wire` is a connection between two `Socket`s.

@@ -46,11 +46,14 @@
             <button onclick="(() => components.push(new Component(0, 0, 'test', camera, [new Socket(Socket.INPUT, camera), new Socket(Socket.INPUT, camera)], [new Socket(Socket.OUTPUT, camera), new Socket(Socket.OUTPUT, camera)])))()">의미없는 요소 추가하기</button>
             <button onclick="(() => components.push(new NotComponent(0, 0, camera)))()">NOT 추가하기</button>
             <button onclick="(() => components.push(new OrComponent(0, 0, camera)))()">OR 추가하기</button>
+            <button onclick="(() => {createTab('New Tab'); changeTab('New Tab');})()">"New Tab" 만들고 이동</button>
+            <button onclick="(() => {changeTab('New Tab');})()">"New Tab" 이동</button>
+            <button onclick="(() => {changeTab('Untitled');})()">"Untitled" 이동</button>
         </p>
     </div>
     <div class="board">
         <div class="path">
-            Tab 1 > XOR > AND
+            Tab
         </div>
         <div class="canvas">
             <canvas id="canvas"></canvas>
