@@ -65,6 +65,10 @@ function isDown(key) {
   return keyDowns.indexOf(key) !== -1;
 }
 
+function isUp(key) {
+  return keyUps.indexOf(key) !== -1;
+}
+
 function isClicked(button) {
   return mousePresseds.indexOf(button) !== -1;
 }
@@ -419,11 +423,22 @@ function tickComponentMakeDelete() {
   }
 }
 
+let lastWorkMode = null;
+function tickSpaceDrag() {
+  if (isDown(" ")) {
+    lastWorkMode = getWorkMode();
+    setWorkMode(WM_DRAG);
+  } else if (isUp(" ")) {
+    setWorkMode(lastWorkMode);
+  }
+}
+
 // game logic
 function tick() {
   camera.tick();
 
   tickWorkMode();
+  tickSpaceDrag();
   tickComponentRotation();
   tickComponentMakeDelete();
 
@@ -469,14 +484,17 @@ function resize() {
 window.addEventListener("resize", resize);
 
 function keyDown(event) {
+  if (keys.indexOf(event.key) === -1) {
+    keyDowns.push(event.key);
+  }
+
   keys.push(event.key);
-  keyDowns.push(event.key);
 }
 window.addEventListener("keydown", keyDown);
 
 function keyUp(event) {
-  keys = keys.filter(key => key !== event.key);
   keyUps.push(event.key);
+  keys = keys.filter(key => key !== event.key);
 }
 window.addEventListener("keyup", keyUp);
 
