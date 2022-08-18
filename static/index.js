@@ -232,7 +232,7 @@ let highlightedSocket = null;
 let startSocket = null;
 function tickWireMode() {
   // if mouseUp
-  if (highlightedSocket !== null && isMouseUp(0) && startSocket !== highlightedSocket) {
+  if (startSocket !== null && highlightedSocket !== null && isMouseUp(0) && startSocket !== highlightedSocket) {
     // swap INPUT -> OUTPUT to OUTPUT -> INPUT
     if (startSocket.role === Socket.INPUT && highlightedSocket.role === Socket.OUTPUT) {
       let temp = startSocket;
