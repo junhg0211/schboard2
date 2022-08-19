@@ -3,8 +3,8 @@
  * `Wire` will be connected to the sockets, and communicate with other `Components`.
  */
 class Socket {
-  static ON_COLOR = 'red';
-  static OFF_COLOR = 'black';
+  static ON_COLOR = [255, 0, 0];
+  static OFF_COLOR = [0, 0, 0];
   static RADIUS = 0.3;
   static OUTPUT = 'output';
   static INPUT = 'input';
@@ -20,6 +20,9 @@ class Socket {
     this.on = false;
 
     this.surface = new CameraCircle(this.x, this.y, Socket.RADIUS, Socket.OFF_COLOR, this.camera);
+
+    this.tickCount = 0;
+    this.onCount = 0;
   }
 
   setPos(x, y) {
@@ -44,10 +47,24 @@ class Socket {
   tick() {
     this.setHighlight(this === highlightedSocket || this === startSocket);
     this.surface.tick();
+
+    this.tickCount++;
+    if (this.on) this.onCount++;
   }
 
   render() {
+    let r = Math.round(lerp(Socket.OFF_COLOR[0], Socket.ON_COLOR[0], this.onCount / this.tickCount))
+      .toString(16).padStart(2, '0');
+    let g = Math.round(lerp(Socket.OFF_COLOR[1], Socket.ON_COLOR[1], this.onCount / this.tickCount))
+      .toString(16).padStart(2, '0');
+    let b = Math.round(lerp(Socket.OFF_COLOR[2], Socket.ON_COLOR[2], this.onCount / this.tickCount))
+      .toString(16).padStart(2, '0');
+    this.surface.color = `#${r}${g}${b}`;
+
     this.surface.render();
+
+    this.tickCount = 0;
+    this.onCount = 0;
   }
 
   changeState(state) {
@@ -62,6 +79,9 @@ class Socket {
       let connectedComponent = getConnectedComponent(this);
       componentCalculationQueue.push(connectedComponent)
     }
+
+    this.tickCount++;
+    if (this.on) this.onCount++;
   }
 }
 
@@ -249,8 +269,8 @@ let componentCalculationQueue = null;
  * `Wire` is a connection between two `Socket`s.
  */
 class Wire {
-  static ON_COLOR = 'lime';
-  static OFF_COLOR = 'grey';
+  static ON_COLOR = [0, 255, 0];
+  static OFF_COLOR = [127, 127, 127];
   static WIDTH = 0.3;
 
   constructor(fromSocket, toSocket, camera) {
@@ -261,6 +281,9 @@ class Wire {
     this.on = this.fromSocket.on;
 
     this.surface = new CameraLine(0, 0, 0, 10, Wire.OFF_COLOR, Wire.WIDTH, this.camera);
+
+    this.tickCount = 0;
+    this.onCount = 0;
   }
 
   setColorByFromSocket() {
@@ -277,10 +300,23 @@ class Wire {
     this.surface.realX2 = this.toSocket.x;
     this.surface.realY2 = this.toSocket.y;
     this.surface.tick();
+
+    this.tickCount++;
+    if (this.on) this.onCount++;
   }
 
   render() {
+    let r = Math.round(lerp(Wire.OFF_COLOR[0], Wire.ON_COLOR[0], this.onCount / this.tickCount))
+      .toString(16).padStart(2, '0');
+    let g = Math.round(lerp(Wire.OFF_COLOR[1], Wire.ON_COLOR[1], this.onCount / this.tickCount))
+      .toString(16).padStart(2, '0')
+    let b = Math.round(lerp(Wire.OFF_COLOR[2], Wire.ON_COLOR[2], this.onCount / this.tickCount))
+      .toString(16).padStart(2, '0');
+    this.surface.color = `#${r}${g}${b}`;
     this.surface.render();
+
+    this.tickCount = 0;
+    this.onCount = 0;
   }
 
   calculate() {
@@ -288,6 +324,9 @@ class Wire {
     this.setColorByFromSocket();
 
     this.toSocket.changeState(this.on);
+
+    this.tickCount++;
+    if (this.on) this.onCount++;
   }
 
   delete() {
