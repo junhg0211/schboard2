@@ -455,9 +455,20 @@ function getClosestComponent(x, y) {
 
 function tickComponentRotation() {
   if (isDown('r')) {
-    let component = getClosestComponent(camera.getBoardX(mouseX), camera.getBoardY(mouseY));
-    lastDirection = (component.direction + 1) % 4;
-    component.setDirection(lastDirection);
+    if (selectedObjects.length === 0) {
+      let component = getClosestComponent(camera.getBoardX(mouseX), camera.getBoardY(mouseY));
+      if (component !== null) {
+        component.rotateOnce();
+        lastDirection = component.direction;
+      }
+    } else {
+      selectedObjects.forEach(object => {
+        object.rotateOnce();
+      });
+      if (selectedObjects.length === 1) {
+        lastDirection = selectedObjects[0].direction;
+      }
+    }
   }
 }
 

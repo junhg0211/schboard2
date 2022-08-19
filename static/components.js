@@ -121,6 +121,11 @@ class Component {
     this.reposition();
   }
 
+  rotateOnce() {
+    this.direction = (this.direction + 1) % 4;
+    this.reposition();
+  }
+
   reposition() {
     // calculate size according to the count of the sockets
     this.size = getComponentSizeBySocketCount(Math.max(this.inSockets.length, this.outSockets.length));
