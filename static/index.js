@@ -428,7 +428,7 @@ function tickComponentRotation() {
  * like backspace to delete and o to OrComponent etc
  */
 function tickComponentMakeDelete() {
-  if (isDown('Backspace') || isDown('Delete')) {
+  if (isDown('Delete')) {
     let component = getClosestComponent(camera.getBoardX(mouseX), camera.getBoardY(mouseY));
     if (component !== null) {
       component.delete();
