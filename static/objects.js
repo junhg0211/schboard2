@@ -126,7 +126,7 @@ class Camera {
   static DOWN_KEY = 's';
   static LEFT_KEY = 'a';
   static RIGHT_KEY = 'd';
-  static movingInterpolation = 1/6;
+  static movingInterpolation = 0.15;
 
   constructor(x, y, zoom) {
     this.x = x;
