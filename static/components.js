@@ -118,11 +118,13 @@ class Component {
 
   setDirection(direction) {
     this.direction = direction;
+    lastDirection = this.direction;
     this.reposition();
   }
 
   rotateOnce() {
     this.direction = (this.direction + 1) % 4;
+    lastDirection = this.direction;
     this.reposition();
   }
 

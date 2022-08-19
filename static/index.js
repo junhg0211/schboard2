@@ -459,15 +459,11 @@ function tickComponentRotation() {
       let component = getClosestComponent(camera.getBoardX(mouseX), camera.getBoardY(mouseY));
       if (component !== null) {
         component.rotateOnce();
-        lastDirection = component.direction;
       }
     } else {
       selectedObjects.forEach(object => {
         object.rotateOnce();
       });
-      if (selectedObjects.length === 1) {
-        lastDirection = selectedObjects[0].direction;
-      }
     }
   }
 }
