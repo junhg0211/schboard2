@@ -152,6 +152,7 @@ changeTab(nowTab);
 let calculationLimit = 2;
 let nextGameObjectId = 0;
 let lastDirection = 0;
+let minimalSatisfaction = 0;
 
 // work mode
 const WM_ARRANGE = 'arrange';
@@ -531,7 +532,7 @@ function tickInfoTable() {
   infoCalculationQueueLength.innerText = componentCalculationQueue.length;
   infoCpf.innerText = cpf;
   infoCcc.innerText = ccList.length;
-  infoSatisfactionRate.innerText = cpf === 0 ? Infinity : Math.round(cpf / ccList.length * 1000) / 1000;
+  infoSatisfactionRate.innerText = cpf === 0 ? 1 : Math.round(cpf / ccList.length * 1000) / 1000;
 }
 
 let cpf = 0;  // calculations per frame
@@ -566,6 +567,13 @@ function tick() {
     cpf++;
   }
   cccDelta++;
+
+  // minimal satisfaction
+  let idealCalculationLimit = ccList.length * minimalSatisfaction;
+  if (calculationLimit < idealCalculationLimit) {
+    calculationLimit = idealCalculationLimit;
+    calculationLimitInput.value = calculationLimit;
+  }
 
   tickInput();
 }
@@ -661,6 +669,12 @@ frictionInterpolationRange.addEventListener("change", (event) => {
   Camera.movingInterpolation = event.target.value / 100;
 });
 frictionInterpolationRange.value = Camera.movingInterpolation * 100;
+
+const minimalSatisfactionInput = document.querySelector("#minimal-satisfaction");
+minimalSatisfactionInput.addEventListener("change", (event) => {
+  minimalSatisfaction = event.target.value;
+});
+minimalSatisfactionInput.value = minimalSatisfaction;
 
 // main loop
 window.addEventListener("load", () => {
