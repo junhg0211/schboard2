@@ -523,17 +523,20 @@ const infoCameraZoom = document.querySelector("#info-camera-zoom");
 const infoCalculationQueueLength = document.querySelector("#info-calculation-queue-length");
 const infoCpf = document.querySelector("#info-cpf");
 const infoCcc = document.querySelector("#info-ccc");
+const infoSatisfactionRate = document.querySelector("#info-satisfaction-rate");
 function tickInfoTable() {
   infoCameraX.innerText = Math.round(camera.x * 1000) / 1000;
   infoCameraY.innerText = Math.round(camera.y * 1000) / 1000;
   infoCameraZoom.innerText = Math.round(camera.zoom * 1000) / 1000;
   infoCalculationQueueLength.innerText = componentCalculationQueue.length;
   infoCpf.innerText = cpf;
-  infoCcc.innerText = ccc;
+  infoCcc.innerText = ccList.length;
+  infoSatisfactionRate.innerText = cpf === 0 ? Infinity : Math.round(cpf / ccList.length * 1000) / 1000;
 }
 
 let cpf = 0;  // calculations per frame
-let ccc = 0, ccList = [];  // calculation components count
+let ccList = [];  // calculation components count
+let cccDelta = 0;
 // game logic
 function tick() {
   camera.tick();
@@ -548,19 +551,21 @@ function tick() {
   wires.forEach(wires => wires.tick());
 
   cpf = 0;
-  ccc = 0;
-  ccList.length = 0;
+  if (cccDelta > FPS * 5) {
+    ccList.length = 0;
+    cccDelta -= FPS * 5;
+  }
   for (let i = 0; i < calculationLimit && componentCalculationQueue.length > 0; i++) {
     let component = componentCalculationQueue.shift();
     if (component) {
       component.calculate();
       if (ccList.indexOf(component.id) === -1) {
         ccList.push(component.id);
-        ccc++;
       }
     }
     cpf++;
   }
+  cccDelta++;
 
   tickInput();
 }
