@@ -85,6 +85,7 @@ class Component {
   static PADDING = 1;
   static BACKGROUND_COLOR = 'white';
   static BORDER_COLOR = 'black';
+  static SELECTED_BORDER_COLOR = 'red';
   static DIRECTION_INDICATOR_COLOR = 'darkgrey';
   static TEXT_COLOR = 'black';
 
@@ -102,6 +103,8 @@ class Component {
 
     this.id = nextGameObjectId++;
     this.surfaces = [];
+
+    this.selected = false;
 
     this.reposition();
     this.calculate();
@@ -207,6 +210,12 @@ class Component {
     this.surfaces.forEach(surface => surface.tick());
     this.inSockets.forEach(socket => socket.tick());
     this.outSockets.forEach(socket => socket.tick());
+
+    if (this.selected) {
+      this.surfaces[2].color = Component.SELECTED_BORDER_COLOR;
+    } else {
+      this.surfaces[2].color = Component.BORDER_COLOR;
+    }
   }
 
   render() {

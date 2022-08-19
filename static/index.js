@@ -44,6 +44,10 @@ function lerp(a, b, t) {
   return a + (b - a) * t;
 }
 
+function rectangleCollision(x1, y1, w1, h1, x2, y2, w2, h2) {
+  return x1 < x2 + w2 && x1 + w1 > x2 && y1 < y2 + h2 && y1 + h1 > y2;
+}
+
 // general variable
 const menubarWidth = document.querySelector(".operation").clientWidth;
 
@@ -226,6 +230,18 @@ function tickArrangeMode() {
 
       selectingBox.width = Math.abs(camera.getScreenX(mouseAnchorX) - mouseX);
       selectingBox.height = Math.abs(camera.getScreenY(mouseAnchorY) - mouseY);
+
+      let selectingBoxCameraX = camera.getBoardX(selectingBox.x);
+      let selectingBoxCameraY = camera.getBoardY(selectingBox.y);
+      let selectingBoxCameraWidth = selectingBox.width / camera.zoom;
+      let selectingBoxCameraHeight = selectingBox.height / camera.zoom;
+
+
+      components.forEach(component => {
+        component.selected = rectangleCollision(
+          component.x, component.y, component.size, component.size,
+          selectingBoxCameraX, selectingBoxCameraY, selectingBoxCameraWidth, selectingBoxCameraHeight);
+      });
 
       selectingBox.tick();
     }
