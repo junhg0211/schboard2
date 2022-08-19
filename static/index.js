@@ -89,10 +89,6 @@ function isMouseUp(button) {
   return mouseUps.indexOf(button) !== -1;
 }
 
-function isDoubleClicked(button) {
-  return doubleClicks.indexOf(button) !== -1;
-}
-
 function tickInput() {
   keyDowns = [];
   keyUps = [];
