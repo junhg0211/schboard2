@@ -467,9 +467,16 @@ function tickComponentRotation() {
  */
 function tickComponentMakeDelete() {
   if (isDown('Delete')) {
-    let component = getClosestComponent(camera.getBoardX(mouseX), camera.getBoardY(mouseY));
-    if (component !== null) {
-      component.delete();
+    if (selectedObjects.length === 0) {
+      let component = getClosestComponent(camera.getBoardX(mouseX), camera.getBoardY(mouseY));
+      if (component !== null) {
+        component.delete();
+      }
+    } else {
+      selectedObjects.forEach(object => {
+        object.delete();
+      });
+      selectedObjects.length = 0;
     }
   } else if (isDown('o')) {
     let size = getComponentSizeBySocketCount(2);
