@@ -327,18 +327,18 @@ class Grid {
     let width = this.camera.zoom * Grid.LINE_WIDTH;
 
     if (this.camera.zoom < 5) return;
+
+    ctx.strokeStyle = Grid.COLOR
+      + lerp(0, 255, Math.round(limit(this.camera.zoom, 5, 20) - 5) / 15).toString(16).padStart(2, '0');
+    ctx.lineWidth = width;
     for (let x = startX; x < canvas.width; x += this.camera.zoom) {
       ctx.beginPath();
-      ctx.strokeStyle = Grid.COLOR;
-      ctx.lineWidth = width;
       ctx.moveTo(x, 0);
       ctx.lineTo(x, canvas.height);
       ctx.stroke();
     }
     for (let y = startY; y < canvas.height; y += this.camera.zoom) {
       ctx.beginPath();
-      ctx.strokeStyle = Grid.COLOR;
-      ctx.lineWidth = width;
       ctx.beginPath();
       ctx.moveTo(0, y);
       ctx.lineTo(canvas.width, y);
