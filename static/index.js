@@ -169,10 +169,10 @@ function setWorkMode(workMode) {
 }
 
 let floatingObject = null;
-let floatingObjectOriginalX = 0;
-let floatingObjectOriginalY = 0;
 let startingCameraX, startingCameraY;  // camera position when mouse down in camera world
 let mouseAnchorX, mouseAnchorY;  // mouse position when mouse down in screen world
+let selectedObjects = [];
+let selectedObjectPositions = [];
 function tickArrangeMode() {
   let inGameX = camera.getBoardX(mouseX), inGameY = camera.getBoardY(mouseY);
   if (isMouseDown(0)) {
@@ -183,10 +183,27 @@ function tickArrangeMode() {
       if (object.x <= inGameX && inGameX <= object.x + object.size
           && object.y <= inGameY && inGameY <= object.y + object.size) {
         floatingObject = object;
-        floatingObjectOriginalX = object.x;
-        floatingObjectOriginalY = object.y;
         break;
       }
+    }
+
+    if (floatingObject !== null) {
+      // if the floatingObject is not in selectedObjects,
+      // remove all the other selectedObjects from list and add the floatingObject to list
+      if (selectedObjects.indexOf(floatingObject) === -1) {
+        selectedObjects.forEach(object => {
+          object.selected = false;
+        });
+        selectedObjects.length = 0;
+
+        selectedObjects.push(floatingObject);
+        floatingObject.selected = true;
+      }
+
+      selectedObjectPositions.length = 0;
+      selectedObjects.forEach(object => {
+        selectedObjectPositions[object.id] = [object.x, object.y];
+      });
     }
 
     // record the camera position at the mousedown
@@ -207,19 +224,25 @@ function tickArrangeMode() {
     selectingBox.width = 0;
     selectingBox.height = 0;
 
-    if (floatingObject !== null && floatingObject !== undefined) {
-      let x = Math.round(floatingObject.x);
-      let y = Math.round(floatingObject.y);
-      floatingObject.setPos(x, y);
-      floatingObject = null;
+    if (floatingObject) {
+      let x, y;
+      selectedObjects.forEach(object => {
+        x = Math.round(object.x);
+        y = Math.round(object.y);
+        object.setPos(x, y);
+      });
     }
   }
 
   if (isClicked(0)) {
-    if (floatingObject !== null && floatingObject !== undefined) {
-      let x = Math.round(floatingObjectOriginalX + inGameX - camera.getBoardX(mouseClickedX) - startingCameraX + camera.x);
-      let y = Math.round(floatingObjectOriginalY + inGameY - camera.getBoardY(mouseClickedY) - startingCameraY + camera.y);
-      floatingObject.setPos(x, y);
+    if (floatingObject) {
+      let cameraClickedX = camera.getBoardX(mouseClickedX), cameraClickedY = camera.getBoardY(mouseClickedY);
+      selectedObjects.forEach(object => {
+        object.setPos(
+          Math.round(selectedObjectPositions[object.id][0] + inGameX - cameraClickedX - startingCameraX + camera.x),
+          Math.round(selectedObjectPositions[object.id][1] + inGameY - cameraClickedY - startingCameraY + camera.y)
+        );
+      });
     } else {
       selectingBox.x = Math.min(camera.getScreenX(mouseAnchorX), mouseX);
       selectingBox.y = Math.min(camera.getScreenY(mouseAnchorY), mouseY);
@@ -232,11 +255,14 @@ function tickArrangeMode() {
       let selectingBoxCameraWidth = selectingBox.width / camera.zoom;
       let selectingBoxCameraHeight = selectingBox.height / camera.zoom;
 
-
+      selectedObjects.length = 0;
       components.forEach(component => {
         component.selected = rectangleCollision(
           component.x, component.y, component.size, component.size,
           selectingBoxCameraX, selectingBoxCameraY, selectingBoxCameraWidth, selectingBoxCameraHeight);
+        if (component.selected) {
+          selectedObjects.push(component);
+        }
       });
 
       selectingBox.tick();
