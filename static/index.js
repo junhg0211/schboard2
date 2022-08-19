@@ -513,6 +513,23 @@ function tickSpaceDrag() {
   }
 }
 
+const infoCameraX = document.querySelector("#info-camera-x");
+const infoCameraY = document.querySelector("#info-camera-y");
+const infoCameraZoom = document.querySelector("#info-camera-zoom");
+const infoCalculationQueueLength = document.querySelector("#info-calculation-queue-length");
+const infoCpf = document.querySelector("#info-cpf");
+const infoCcc = document.querySelector("#info-ccc");
+function tickInfoTable() {
+  infoCameraX.innerText = Math.round(camera.x * 1000) / 1000;
+  infoCameraY.innerText = Math.round(camera.y * 1000) / 1000;
+  infoCameraZoom.innerText = Math.round(camera.zoom * 1000) / 1000;
+  infoCalculationQueueLength.innerText = componentCalculationQueue.length;
+  infoCpf.innerText = cpf;
+  infoCcc.innerText = ccc;
+}
+
+let cpf = 0;  // calculations per frame
+let ccc = 0, ccList = [];  // calculation components count
 // game logic
 function tick() {
   camera.tick();
@@ -521,14 +538,24 @@ function tick() {
   tickSpaceDrag();
   tickComponentRotation();
   tickComponentMakeDelete();
+  tickInfoTable();
 
   components.forEach(object => object.tick());
   wires.forEach(wires => wires.tick());
-  for (let i = 0; i < calculationLimit && componentCalculationQueue; i++) {
+
+  cpf = 0;
+  ccc = 0;
+  ccList.length = 0;
+  for (let i = 0; i < calculationLimit && componentCalculationQueue.length > 0; i++) {
     let component = componentCalculationQueue.shift();
     if (component) {
       component.calculate();
+      if (ccList.indexOf(component.id) === -1) {
+        ccList.push(component.id);
+        ccc++;
+      }
     }
+    cpf++;
   }
 
   tickInput();
