@@ -53,6 +53,14 @@ class Socket {
   }
 
   render() {
+    let cameraRadius = Socket.RADIUS * this.camera.zoom;
+    if (
+      this.x - cameraRadius > cameraRight
+      || this.x + cameraRadius < cameraLeft
+      || this.y  - cameraRadius > cameraBottom
+      || this.y + cameraRadius < cameraTop
+    ) return;
+
     let r = Math.round(lerp(Socket.OFF_COLOR[0], Socket.ON_COLOR[0], this.onCount / this.tickCount))
       .toString(16).padStart(2, '0');
     let g = Math.round(lerp(Socket.OFF_COLOR[1], Socket.ON_COLOR[1], this.onCount / this.tickCount))
@@ -125,6 +133,7 @@ class Component {
     this.surfaces = [];
 
     this.selected = false;
+    this.delay = 1;
 
     this.reposition();
     this.calculate();
@@ -158,7 +167,8 @@ class Component {
       new CameraRectangle(this.x, this.y, this.size, this.size, Component.DIRECTION_INDICATOR_COLOR, this.camera),
       new CameraRectangleLine(this.x, this.y, this.size, this.size, Component.BORDER_COLOR, 0.3, this.camera),
       new CameraText(this.x + this.size / 2, this.y + this.size / 2, this.name, Component.TEXT_COLOR, "Pretendard", 1, this.camera),
-      new CameraText(this. x + 1, this.y + 1, this.id, Component.TEXT_COLOR, "Pretendard", 1, this.camera),
+      new CameraText(this.x + 1, this.y + 1, this.id, Component.TEXT_COLOR, "Pretendard", 1, this.camera),
+      new CameraText(this.x + 1, this.y + this.size - 1, this.delay, Component.TEXT_COLOR, "Pretendard", 1, this.camera),
     ];
 
     if (this.direction === DIRECTION_UP) {
@@ -246,6 +256,14 @@ class Component {
   }
 
   render() {
+    let radius = this.surfaces[2].width * this.camera.zoom;
+    if (
+      this.x + this.size + radius < cameraLeft
+      || this.x - radius > cameraRight
+      || this.y + this.size + radius < cameraTop
+      || this.y - radius > cameraBottom
+    ) return;
+
     this.surfaces.forEach(surface => surface.render());
     this.inSockets.forEach(socket => socket.render());
     this.outSockets.forEach(socket => socket.render());
@@ -306,6 +324,18 @@ class Wire {
   }
 
   render() {
+    let radius = this.camera.zoom * Wire.WIDTH ;
+    let lefterX = this.surface.realX, righterX = this.surface.realX2;
+    let higherY = this.surface.realY, lowerY = this.surface.realY2;
+    if (lefterX > righterX) [lefterX, righterX] = [righterX, lefterX];
+    if (higherY > lowerY) [higherY, lowerY] = [lowerY, higherY]
+    if (
+      lefterX - radius > cameraRight
+      || righterX + radius < cameraLeft
+      || higherY + radius < cameraTop
+      || lowerY - radius > cameraBottom
+    ) return;
+
     let r = Math.round(lerp(Wire.OFF_COLOR[0], Wire.ON_COLOR[0], this.onCount / this.tickCount))
       .toString(16).padStart(2, '0');
     let g = Math.round(lerp(Wire.OFF_COLOR[1], Wire.ON_COLOR[1], this.onCount / this.tickCount))

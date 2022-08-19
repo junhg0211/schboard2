@@ -103,6 +103,11 @@ let centerIndicator = new PositionIndicator(0, 0, 'white', 1, camera);
 let grid = new Grid(camera);
 let selectingBox = new RectangleWithLine(0, 0, 0, 0, '#fff2', '#fffa', 1);
 
+let cameraLeft = 0;
+let cameraRight = 0;
+let cameraTop = 0;
+let cameraBottom = 0;
+
 // tabs
 let tabs = [], nowTab = "Untitled";
 let components = null, wires = null;
@@ -583,6 +588,12 @@ function tick() {
       calculationLimitInput.value = calculationLimit;
     }
   }
+
+  // camera world screen left, right, top and bottom for optimizing component and wire render
+  cameraLeft = camera.getBoardX(0);
+  cameraRight = camera.getBoardX(canvas.width);
+  cameraTop = camera.getBoardY(0);
+  cameraBottom = camera.getBoardY(canvas.height);
 
   tickInput();
 }
