@@ -464,6 +464,10 @@ function tickComponentRotation() {
       selectedObjects.forEach(object => {
         object.rotateOnce();
       });
+      if (selectedObjects.length === 1) {
+        selectedObjects[0].selected = false;
+        selectedObjects.length = 0;
+      }
     }
   }
 }
