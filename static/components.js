@@ -347,7 +347,7 @@ function getConnectedComponent(socket) {
 
 class TrueComponent extends Component {
   constructor(x, y, camera) {
-    super(x, y, "1", camera, [], [new Socket(Socket.OUTPUT, camera)]);
+    super(x, y, "TRUE", camera, [], [new Socket(Socket.OUTPUT, camera)]);
   }
 
   calculate() {
@@ -357,7 +357,7 @@ class TrueComponent extends Component {
 
 class NotComponent extends Component {
   constructor(x, y, camera) {
-    super(x, y, "¬", camera, [new Socket(Socket.INPUT, camera)], [new Socket(Socket.OUTPUT, camera)]);
+    super(x, y, "NOT", camera, [new Socket(Socket.INPUT, camera)], [new Socket(Socket.OUTPUT, camera)]);
   }
 
   calculate() {
@@ -368,7 +368,7 @@ class NotComponent extends Component {
 class OrComponent extends Component {
   constructor(x, y, camera) {
     super(
-        x, y, "∨", camera,
+        x, y, "OR", camera,
         [new Socket(Socket.INPUT, camera), new Socket(Socket.INPUT, camera)],
         [new Socket(Socket.OUTPUT, camera)]
     );
