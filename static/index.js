@@ -152,7 +152,7 @@ changeTab(nowTab);
 let calculationLimit = 2;
 let nextGameObjectId = 0;
 let lastDirection = 0;
-let minimalSatisfaction = 0;
+let minimalSatisfaction = 1, maximalSatisfaction = 2;
 
 // work mode
 const WM_ARRANGE = 'arrange';
@@ -521,6 +521,9 @@ const infoCalculationQueueLength = document.querySelector("#info-calculation-que
 const infoCpf = document.querySelector("#info-cpf");
 const infoCcc = document.querySelector("#info-ccc");
 const infoSatisfactionRate = document.querySelector("#info-satisfaction-rate");
+const infoComponents = document.querySelector("#info-components");
+const infoWires = document.querySelector("#info-wires");
+const infoSelectedComponents = document.querySelector("#info-selected-components");
 function tickInfoTable() {
   infoCameraX.innerText = Math.round(camera.x * 1000) / 1000;
   infoCameraY.innerText = Math.round(camera.y * 1000) / 1000;
@@ -529,6 +532,9 @@ function tickInfoTable() {
   infoCpf.innerText = cpf;
   infoCcc.innerText = ccList.length;
   infoSatisfactionRate.innerText = cpf === 0 ? 1 : Math.round(cpf / ccList.length * 1000) / 1000;
+  infoComponents.innerText = components.length;
+  infoWires.innerText = wires.length;
+  infoSelectedComponents.innerText = selectedObjects.length;
 }
 
 let cpf = 0;  // calculations per frame
@@ -564,11 +570,18 @@ function tick() {
   }
   cccDelta++;
 
-  // minimal satisfaction
-  let idealCalculationLimit = ccList.length * minimalSatisfaction;
-  if (calculationLimit < idealCalculationLimit) {
-    calculationLimit = idealCalculationLimit;
+  // minimal and maximal satisfaction
+  let idealMinimalCalculationLimit = ccList.length * minimalSatisfaction;
+  if (calculationLimit < idealMinimalCalculationLimit) {
+    calculationLimit = idealMinimalCalculationLimit;
     calculationLimitInput.value = calculationLimit;
+  }
+  if (ccList.length > 0) {
+    let idealMaximalCalculationLimit = ccList.length * maximalSatisfaction;
+    if (calculationLimit > idealMaximalCalculationLimit) {
+      calculationLimit = idealMaximalCalculationLimit;
+      calculationLimitInput.value = calculationLimit;
+    }
   }
 
   tickInput();
@@ -671,6 +684,12 @@ minimalSatisfactionInput.addEventListener("change", (event) => {
   minimalSatisfaction = event.target.value;
 });
 minimalSatisfactionInput.value = minimalSatisfaction;
+
+const maximalSatisfactionInput = document.querySelector("#maximal-satisfaction");
+maximalSatisfactionInput.addEventListener("change", event => {
+  maximalSatisfaction = event.target.value;
+})
+maximalSatisfactionInput.value = maximalSatisfaction
 
 // main loop
 window.addEventListener("load", () => {
