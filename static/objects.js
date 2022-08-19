@@ -62,6 +62,24 @@ class Circle extends Object {
   }
 }
 
+class RectangleWithLine extends Rectangle {
+  constructor(x, y, width, height, color, lineColor, lineWidth) {
+    super(x, y, width, height, color);
+    this.line = new RectangleLine(x, y, width, height, lineColor, lineWidth);
+  }
+
+  tick() {
+    this.line.x = this.x;
+    this.line.y = this.y;
+    this.line.width = this.width;
+    this.line.height = this.height;
+  }
+
+  render() {
+    super.render();
+    this.line.render();
+  }
+}
 /*
  * `Line` object that connects two points.
  */

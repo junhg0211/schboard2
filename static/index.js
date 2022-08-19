@@ -101,6 +101,7 @@ function tickInput() {
 let camera = new Camera(0, 0, 10);
 let centerIndicator = new PositionIndicator(0, 0, 'white', 1, camera);
 let grid = new Grid(camera);
+let selectingBox = new RectangleWithLine(0, 0, 0, 0, '#fff2', '#fffa', 1);
 
 // tabs
 let tabs = [], nowTab = "Untitled";
@@ -170,7 +171,8 @@ function setWorkMode(workMode) {
 let floatingObject = null;
 let floatingObjectOriginalX = 0;
 let floatingObjectOriginalY = 0;
-let startingCameraX, startingCameraY;
+let startingCameraX, startingCameraY;  // camera position when mouse down in camera world
+let mouseAnchorX, mouseAnchorY;  // mouse position when mouse down in screen world
 function tickArrangeMode() {
   let inGameX = camera.getBoardX(mouseX), inGameY = camera.getBoardY(mouseY);
   if (isMouseDown(0)) {
@@ -186,15 +188,25 @@ function tickArrangeMode() {
         break;
       }
     }
+
     // record the camera position at the mousedown
     startingCameraX = camera.x;
     startingCameraY = camera.y;
-    // get the floatingObject at the front glancing position
     if (floatingObject) {
-      components.splice(components.indexOf(floatingObject), 1);
-      components.push(floatingObject);
+      // get the floatingObject at the front glancing position
+      if (floatingObject) {
+        components.splice(components.indexOf(floatingObject), 1);
+        components.push(floatingObject);
+      }
+    } else {
+      // get the mouse anchor position in screen world
+      mouseAnchorX = inGameX;
+      mouseAnchorY = inGameY;
     }
   } else if (isMouseUp(0)) {
+    selectingBox.width = 0;
+    selectingBox.height = 0;
+
     if (floatingObject !== null && floatingObject !== undefined) {
       let x = Math.round(floatingObject.x);
       let y = Math.round(floatingObject.y);
@@ -202,10 +214,21 @@ function tickArrangeMode() {
       floatingObject = null;
     }
   }
-  if (floatingObject !== null && floatingObject !== undefined && isClicked(0)) {
-    let x = Math.round(floatingObjectOriginalX + inGameX - camera.getBoardX(mouseClickedX) - startingCameraX + camera.x);
-    let y = Math.round(floatingObjectOriginalY + inGameY - camera.getBoardY(mouseClickedY) - startingCameraY + camera.y);
-    floatingObject.setPos(x, y);
+
+  if (isClicked(0)) {
+    if (floatingObject !== null && floatingObject !== undefined) {
+      let x = Math.round(floatingObjectOriginalX + inGameX - camera.getBoardX(mouseClickedX) - startingCameraX + camera.x);
+      let y = Math.round(floatingObjectOriginalY + inGameY - camera.getBoardY(mouseClickedY) - startingCameraY + camera.y);
+      floatingObject.setPos(x, y);
+    } else {
+      selectingBox.x = Math.min(camera.getScreenX(mouseAnchorX), mouseX);
+      selectingBox.y = Math.min(camera.getScreenY(mouseAnchorY), mouseY);
+
+      selectingBox.width = Math.abs(camera.getScreenX(mouseAnchorX) - mouseX);
+      selectingBox.height = Math.abs(camera.getScreenY(mouseAnchorY) - mouseY);
+
+      selectingBox.tick();
+    }
   }
 }
 
@@ -312,7 +335,6 @@ function tickWireArrangeMode() {
   }
 }
 
-let mouseAnchorX, mouseAnchorY;
 function tickDragMode() {
   if (isMouseDown(0)) {
     mouseAnchorX = mouseX;
@@ -469,6 +491,10 @@ function render() {
   centerIndicator.render();
   components.forEach(component => component.render());
   wires.forEach(wire => wire.render());
+
+  if (selectingBox.width !== 0 && selectingBox.height !== 0) {
+    selectingBox.render();
+  }
 
   if (getWorkMode() === WM_WIRE_ARRANGE) {
     wireHighlight.render();
