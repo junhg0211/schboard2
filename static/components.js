@@ -449,7 +449,8 @@ class IntegratedComponent extends Component {
     super(x, y, name, camera, inSockets, outSockets)
     this.components = components;
     this.wires = wires;
-    this.delay = this.components.length;
+    this.delay = 0;
+    this.components.forEach(component => this.delay += component.delay);
 
     let socket, component;
     this.inComponents = [];
