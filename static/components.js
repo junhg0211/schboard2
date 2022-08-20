@@ -369,7 +369,6 @@ function getConnectedWires(socket, componentList, wireList) {
     wire = wireList[i];
     if (wire.fromSocket === socket || wire.toSocket === socket) {
       result.push(wire);
-      break;
     }
   }
 
