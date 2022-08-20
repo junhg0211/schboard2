@@ -509,3 +509,15 @@ function getInOutSockets(componentList, wireList) {
     sockets.filter(socket => socket.role === Socket.OUTPUT),
   ];
 }
+
+function getComponentsBorder(componentList) {
+  let x1 = Infinity, y1 = Infinity, x2 = -Infinity, y2 = -Infinity;
+  componentList.forEach(component => {
+    x1 = Math.min(component.x, x1);
+    y1 = Math.min(component.y, y1);
+    x2 = Math.max(component.x + component.size, x2);
+    y2 = Math.max(component.y + component.size, y2);
+  })
+
+  return [x1, y1, x2, y2];
+}

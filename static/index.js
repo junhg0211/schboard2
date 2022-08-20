@@ -48,6 +48,10 @@ function rectangleCollision(x1, y1, w1, h1, x2, y2, w2, h2) {
   return x1 < x2 + w2 && x1 + w1 > x2 && y1 < y2 + h2 && y1 + h1 > y2;
 }
 
+function center(a, b) {
+  return (a - b) / 2;
+}
+
 // general variable
 const menubarWidth = document.querySelector(".operation").clientWidth;
 
@@ -412,12 +416,19 @@ function tickZoomMode() {
   }
 }
 
+let unabstractionBorder = new CameraRectangleWithLine(0, 0, 0, 0, "#00f2", "#00f", 1, camera)
 function tickUnabstractionMode() {
-  if (isMouseDown(0)) {
-    let inGameX = camera.getBoardX(mouseX), inGameY = camera.getBoardY(mouseY);
-    let floatingComponent = getFloatingObject(inGameX, inGameY);
+  let inGameX = camera.getBoardX(mouseX), inGameY = camera.getBoardY(mouseY);
+  let floatingComponent = getFloatingObject(inGameX, inGameY);
+  if (floatingComponent && floatingComponent instanceof IntegratedComponent) {
+    let [x1, y1, x2, y2] = getComponentsBorder(floatingComponent.components);
+    unabstractionBorder.realWidth = x2 - x1;
+    unabstractionBorder.realHeight = y2 - y1;
+    unabstractionBorder.realX = Math.round(floatingComponent.x - center(x2 - x1, floatingComponent.size));
+    unabstractionBorder.realY = Math.round(floatingComponent.y - center(y2 - y1, floatingComponent.size));
+    unabstractionBorder.tick();
 
-    if (floatingComponent && floatingComponent instanceof IntegratedComponent) {
+    if (isMouseDown(0)) {
       components.splice(components.indexOf(floatingComponent), 1);
 
       let deltaX = 0, deltaY = 0;
@@ -438,6 +449,9 @@ function tickUnabstractionMode() {
         component.reposition();
       });
     }
+  } else {
+    unabstractionBorder.width = 0;
+    unabstractionBorder.height = 0;
   }
 }
 
@@ -677,8 +691,11 @@ function render() {
     selectingBox.render();
   }
 
-  if (getWorkMode() === WM_WIRE_ARRANGE) {
+  let workMode = getWorkMode()
+  if (workMode === WM_WIRE_ARRANGE) {
     wireHighlight.render();
+  } else if (workMode === WM_UNABSTRACTION) {
+    unabstractionBorder.render();
   }
 }
 
