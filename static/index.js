@@ -417,7 +417,7 @@ function tickUnabstractionMode() {
     let inGameX = camera.getBoardX(mouseX), inGameY = camera.getBoardY(mouseY);
     floatingObject = getFloatingObject(inGameX, inGameY);
 
-    if (floatingObject) {
+    if (floatingObject && floatingObject instanceof IntegratedComponent) {
       components.splice(components.indexOf(floatingObject), 1);
 
       floatingObject.components.forEach(component => {
