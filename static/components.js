@@ -530,3 +530,12 @@ class SwitchComponent extends Component {
     this.calculate();
   }
 }
+
+class PushbuttonComponent extends Component {
+  constructor(x, y, camera) {
+    super(x, y, "Pushbutton", camera, [], [new Socket(Socket.OUTPUT, camera)])
+
+    this.reposition();
+    this.calculate();
+  }
+}
