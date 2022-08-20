@@ -158,8 +158,8 @@ class Component {
       new CameraRectangle(this.x, this.y, this.size, this.size, Component.DIRECTION_INDICATOR_COLOR, this.camera),
       new CameraRectangleLine(this.x, this.y, this.size, this.size, Component.BORDER_COLOR, 0.3, this.camera),
       new CameraText(this.x + this.size / 2, this.y + this.size / 2, this.name, Component.TEXT_COLOR, "Pretendard", 1, this.camera),
-      new CameraText(this.x + 1, this.y + 1, this.id, Component.TEXT_COLOR, "Pretendard", 1, this.camera),
-      new CameraText(this.x + 1, this.y + this.size - 1, this.delay, Component.TEXT_COLOR, "Pretendard", 1, this.camera),
+      new CameraText(this.x + 1, this.y + 1, this.id, Component.TEXT_COLOR, "Pretendard", 1, this.camera, "left", "top"),
+      new CameraText(this.x + 1, this.y + this.size - 1, this.delay, Component.TEXT_COLOR, "Pretendard", 1, this.camera, "left", "bottom"),
     ];
 
     if (this.direction === DIRECTION_UP) {

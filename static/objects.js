@@ -105,19 +105,21 @@ class Line extends Object {
 }
 
 class Text extends Object {
-  constructor(x, y, text, color, font, size) {
+  constructor(x, y, text, color, font, size, textAlign, textBaseline) {
     super(x, y);
     this.text = text;
     this.color = color;
     this.font = font;
     this.size = size;
+    this.textAlign = textAlign ? textAlign : "center";
+    this.textBaseline = textBaseline ? textBaseline : "middle";
   }
 
   render() {
     ctx.fillStyle = this.color;
     ctx.font = this.size + "px " + this.font;
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
+    ctx.textAlign = this.textAlign;
+    ctx.textBaseline = this.textBaseline;
     ctx.fillText(this.text, this.x, this.y);
   }
 }
@@ -371,8 +373,8 @@ class Grid {
  * A `Text` object that works on the Camera world.
  */
 class CameraText extends Text {
-  constructor(x, y, text, color, font, size, camera) {
-    super(x, y, text, color, font, size);
+  constructor(x, y, text, color, font, size, camera, textAlign, textBaseline) {
+    super(x, y, text, color, font, size, textAlign, textBaseline);
     this.camera = camera;
 
     this.realX = x;
