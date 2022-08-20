@@ -165,6 +165,7 @@ const WM_WIRE = 'wire';
 const WM_WIRE_ARRANGE = 'wire_arrange';
 const WM_DRAG = 'drag';
 const WM_ZOOM = 'zoom';
+const WM_UNABSTRACTION = 'unabstraction';
 
 function getWorkMode() {
   return document.querySelector("input[name='work_mode']:checked").value;
@@ -172,6 +173,16 @@ function getWorkMode() {
 
 function setWorkMode(workMode) {
   document.querySelector(`input[name='work_mode'][value='${workMode}']`).checked = true;
+}
+
+function getFloatingObject(inGameX, inGameY) {
+  for (let i = components.length - 1; i >= 0; i--) {
+    let object = components[i];
+    if (object.x <= inGameX && inGameX <= object.x + object.size
+      && object.y <= inGameY && inGameY <= object.y + object.size) {
+      return object;
+    }
+  }
 }
 
 let floatingObject = null;
@@ -182,18 +193,9 @@ let selectedObjectPositions = [];
 function tickArrangeMode() {
   let inGameX = camera.getBoardX(mouseX), inGameY = camera.getBoardY(mouseY);
   if (isMouseDown(0)) {
-    // get a floating object
-    floatingObject = null;
-    for (let i = components.length - 1; i >= 0; i--) {
-      let object = components[i];
-      if (object.x <= inGameX && inGameX <= object.x + object.size
-          && object.y <= inGameY && inGameY <= object.y + object.size) {
-        floatingObject = object;
-        break;
-      }
-    }
+    floatingObject = getFloatingObject(inGameX, inGameY);
 
-    if (floatingObject !== null) {
+    if (floatingObject !== null && floatingObject !== undefined) {
       // if the floatingObject is not in selectedObjects,
       // remove all the other selectedObjects from list and add the floatingObject to list
       if (selectedObjects.indexOf(floatingObject) === -1) {
@@ -410,6 +412,23 @@ function tickZoomMode() {
   }
 }
 
+function tickUnabstractionMode() {
+  if (isMouseDown(0)) {
+    let inGameX = camera.getBoardX(mouseX), inGameY = camera.getBoardY(mouseY);
+    floatingObject = getFloatingObject(inGameX, inGameY);
+
+    if (floatingObject) {
+      components.splice(components.indexOf(floatingObject), 1);
+
+      floatingObject.components.forEach(component => {
+        components.push(component);
+        component.reposition();
+      });
+      wires.push(...floatingObject.wires);
+    }
+  }
+}
+
 /*
  * work mode keyboard shortcuts
  */
@@ -426,6 +445,8 @@ function tickWorkMode() {
     tickDragMode();
   } else if (workMode === WM_ZOOM) {
     tickZoomMode();
+  } else if (workMode === WM_UNABSTRACTION) {
+    tickUnabstractionMode();
   }
 
   if (isPressed('v')) {
@@ -438,6 +459,8 @@ function tickWorkMode() {
     setWorkMode(WM_DRAG);
   } else if (isPressed('z')) {
     setWorkMode(WM_ZOOM);
+  } else if (isPressed('l')) {
+    setWorkMode(WM_UNABSTRACTION);
   }
 }
 
