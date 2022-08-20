@@ -254,6 +254,24 @@ class CameraRectangleLine extends RectangleLine {
   }
 }
 
+class CameraRectangleWithLine extends RectangleWithLine {
+  constructor(x, y, width, height, color, lineColor, lineWidth, camera) {
+    super(x, y, width, height, color, lineColor, lineWidth, camera)
+    this.camera = camera;
+
+    this.realX = x;
+    this.realY = y;
+    this.realWidth = width;
+    this.realHeight = height;
+    this.realLineWidth = lineWidth;
+  }
+
+  tick() {
+    adaptCameraPosition(this, this.camera)
+    this.lineWidth = this.realLineWidth * this.camera.zoom;
+  }
+}
+
 /*
  * A `Circle` object that works on the Camera world.
  */
