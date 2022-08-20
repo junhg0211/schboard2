@@ -134,9 +134,6 @@ class Component {
 
     this.selected = false;
     this.delay = 1;
-
-    this.reposition();
-    this.calculate();
   }
 
   setPos(x, y) {
@@ -359,19 +356,58 @@ class Wire {
   }
 }
 
-function getConnectedWires(socket) {
-  return wires
-      .filter(wire => wire.fromSocket === socket || wire.toSocket === socket);
+function getConnectedWires(socket, componentList, wireList) {
+  // return wires
+  //     .filter(wire => wire.fromSocket === socket || wire.toSocket === socket);
+  if (componentList === undefined) componentList = components;
+  if (wireList === undefined) wireList = wires;
+
+  let result = [];
+
+  let wire;
+  for (let i = 0; i < wireList.length; i++) {
+    wire = wireList[i];
+    if (wire.fromSocket === socket || wire.toSocket === socket) {
+      result.push(wire);
+      break;
+    }
+  }
+
+  let component;
+  for (let i = 0; i < componentList.length; i++) {
+    component = componentList[i];
+    if (component instanceof IntegratedComponent) {
+      let wires = getConnectedWires(socket, component.components, component.wires);
+      result.push(...wires);
+    }
+  }
+
+  return result;
 }
 
-function getConnectedComponent(socket) {
-  return components
-      .find(component => component.inSockets.includes(socket) || component.outSockets.includes(socket));
+function getConnectedComponent(socket, componentList) {
+  if (componentList === undefined) componentList = components;
+
+  let component;
+  for (let i = 0; i < componentList.length; i++) {
+    component = componentList[i];
+    if (component instanceof IntegratedComponent) {
+      let result = getConnectedComponent(socket, component.components);
+      if (result) return result;
+    } else {
+      if (component.inSockets.includes(socket) || component.outSockets.includes(socket)) {
+        return component;
+      }
+    }
+  }
 }
 
 class TrueComponent extends Component {
   constructor(x, y, camera) {
     super(x, y, "TRUE", camera, [], [new Socket(Socket.OUTPUT, camera)]);
+
+    this.reposition();
+    this.calculate();
   }
 
   calculate() {
@@ -382,6 +418,9 @@ class TrueComponent extends Component {
 class NotComponent extends Component {
   constructor(x, y, camera) {
     super(x, y, "NOT", camera, [new Socket(Socket.INPUT, camera)], [new Socket(Socket.OUTPUT, camera)]);
+
+    this.reposition();
+    this.calculate();
   }
 
   calculate() {
@@ -396,9 +435,47 @@ class OrComponent extends Component {
         [new Socket(Socket.INPUT, camera), new Socket(Socket.INPUT, camera)],
         [new Socket(Socket.OUTPUT, camera)]
     );
+
+    this.reposition();
+    this.calculate();
   }
 
   calculate() {
     this.outSockets[0].changeState(this.inSockets[0].on || this.inSockets[1].on);
+  }
+}
+
+class IntegratedComponent extends Component {
+  constructor(x, y, name, camera, inSockets, outSockets, components, wires) {
+    super(x, y, name, camera, inSockets, outSockets)
+    this.components = components;
+    this.wires = wires;
+    this.delay = this.components.length;
+
+    let socket, component;
+    this.inComponents = [];
+    for (let i = 0; i < this.inSockets.length; i++) {
+      socket = this.inSockets[i];
+      for (let j = 0; j < this.components.length; j++) {
+        component = this.components[j];
+        if (component.inSockets.indexOf(socket) !== -1) {
+          this.inComponents.push(component);
+          break;
+        }
+      }
+    }
+
+    this.reposition();
+    this.calculate();
+  }
+
+  tick() {
+    super.tick();
+
+    this.components.forEach(component => component.tick());
+  }
+
+  calculate() {
+    this.inComponents.forEach(component => component.calculate());
   }
 }
