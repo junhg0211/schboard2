@@ -80,6 +80,7 @@ class RectangleWithLine extends Rectangle {
     this.line.render();
   }
 }
+
 /*
  * `Line` object that connects two points.
  */
@@ -267,7 +268,8 @@ class CameraRectangleWithLine extends RectangleWithLine {
   }
 
   tick() {
-    adaptCameraPosition(this, this.camera)
+    adaptCameraPosition(this, this.camera);
+    super.tick();
     this.lineWidth = this.realLineWidth * this.camera.zoom;
   }
 }

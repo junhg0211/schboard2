@@ -748,9 +748,13 @@ function render() {
   if (workMode === WM_WIRE_ARRANGE) {
     wireHighlight.render();
   } else if (workMode === WM_UNABSTRACTION) {
-    unabstractionBorder.render();
+    if (unabstractionBorder.width > 0) {
+      unabstractionBorder.render();
+    }
   } else if (workMode === WM_INTERACTION) {
-    interactiveIndicator.render();
+    if (interactiveIndicator.width > 0) {
+      interactiveIndicator.render();
+    }
   }
 }
 
