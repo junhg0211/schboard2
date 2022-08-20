@@ -566,6 +566,14 @@ function tickSpaceDrag() {
   } else if (isUp(" ")) {
     setWorkMode(lastWorkMode);
   }
+  if (isDown('/')) {
+    let [x1, y1, x2, y2] = getComponentsBorder(components);
+    if (x1 !== Infinity) {
+      camera.targetX = (x2 + x1) / 2;
+      camera.targetY = (y2 + y1) / 2;
+      camera.targetZoom = 0.75 * Math.min(canvas.width / (x2 - x1), canvas.height / (y2 - y1));
+    }
+  }
 }
 
 const infoCameraX = document.querySelector("#info-camera-x");
@@ -623,20 +631,7 @@ function tickAbstraction() {
 let cpf = 0;  // calculations per frame
 let ccList = [];  // calculation components count
 let cccDelta = 0;
-// game logic
-function tick() {
-  camera.tick();
-
-  tickWorkMode();
-  tickSpaceDrag();
-  tickComponentRotation();
-  tickComponentMakeDelete();
-  tickInfoTable();
-  tickAbstraction();
-
-  components.forEach(object => object.tick());
-  wires.forEach(wires => wires.tick());
-
+function tickCalculateComponents() {
   cpf = 0;
   if (cccDelta > FPS * 5) {
     ccList.length = 0;
@@ -667,6 +662,23 @@ function tick() {
       calculationLimitInput.value = calculationLimit;
     }
   }
+}
+
+// game logic
+function tick() {
+  camera.tick();
+
+  tickWorkMode();
+  tickSpaceDrag();
+  tickComponentRotation();
+  tickComponentMakeDelete();
+  tickInfoTable();
+  tickAbstraction();
+
+  components.forEach(object => object.tick());
+  wires.forEach(wires => wires.tick());
+
+  tickCalculateComponents();
 
   // camera world screen left, right, top and bottom for optimizing component and wire render
   cameraLeft = camera.getBoardX(0);
