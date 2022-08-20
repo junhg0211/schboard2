@@ -415,16 +415,28 @@ function tickZoomMode() {
 function tickUnabstractionMode() {
   if (isMouseDown(0)) {
     let inGameX = camera.getBoardX(mouseX), inGameY = camera.getBoardY(mouseY);
-    floatingObject = getFloatingObject(inGameX, inGameY);
+    let floatingComponent = getFloatingObject(inGameX, inGameY);
 
-    if (floatingObject && floatingObject instanceof IntegratedComponent) {
-      components.splice(components.indexOf(floatingObject), 1);
+    if (floatingComponent && floatingComponent instanceof IntegratedComponent) {
+      components.splice(components.indexOf(floatingComponent), 1);
 
-      floatingObject.components.forEach(component => {
+      let deltaX = 0, deltaY = 0;
+      floatingComponent.components.forEach(component => {
         components.push(component);
+
+        deltaX += component.x;
+        deltaY += component.y;
+      });
+      wires.push(...floatingComponent.wires);
+
+      deltaX = floatingComponent.x - Math.round(deltaX / floatingComponent.components.length);
+      deltaY = floatingComponent.y - Math.round(deltaY / floatingComponent.components.length);
+
+      floatingComponent.components.forEach(component => {
+        component.x += deltaX;
+        component.y += deltaY;
         component.reposition();
       });
-      wires.push(...floatingObject.wires);
     }
   }
 }
