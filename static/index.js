@@ -542,6 +542,32 @@ function tickInfoTable() {
   infoSelectedComponents.innerText = selectedObjects.length;
 }
 
+function tickAbstraction() {
+  if (isDown('c')) {
+    if (selectedObjects.length > 1) {
+      let abstractionComponents = [...selectedObjects];
+      let abstractionWires = getIntersectWires(wires, abstractionComponents);
+
+      let avgX = 0, avgY = 0;
+
+      abstractionComponents.forEach(component => {
+        components.splice(components.indexOf(component), 1)
+        avgX += component.x;
+        avgY += component.y;
+      });
+      abstractionWires.forEach(wire => wires.splice(wires.indexOf(wire), 1));
+
+      avgX = Math.round(avgX / abstractionComponents.length);
+      avgY = Math.round(avgY / abstractionComponents.length);
+
+      let [inSockets, outSockets] = getInOutSockets(abstractionComponents, abstractionWires);
+      components.push(new IntegratedComponent(
+        avgX, avgY, "IC", camera, inSockets, outSockets, abstractionComponents, abstractionWires
+      ));
+    }
+  }
+}
+
 let cpf = 0;  // calculations per frame
 let ccList = [];  // calculation components count
 let cccDelta = 0;
@@ -554,6 +580,7 @@ function tick() {
   tickComponentRotation();
   tickComponentMakeDelete();
   tickInfoTable();
+  tickAbstraction();
 
   components.forEach(object => object.tick());
   wires.forEach(wires => wires.tick());

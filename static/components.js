@@ -478,3 +478,33 @@ class IntegratedComponent extends Component {
     this.inComponents.forEach(component => component.calculate());
   }
 }
+
+function getIntersectWires(wireList, ofComponents) {
+  let sockets = [];
+  ofComponents.forEach(component => sockets.push(...component.inSockets, ...component.outSockets));
+
+  return wireList
+    .filter(wire => sockets.includes(wire.fromSocket) && sockets.includes(wire.toSocket));
+}
+
+function getInOutSockets(componentList, wireList) {
+  let sockets = [];
+  componentList.forEach(component => sockets.push(...component.inSockets, ...component.outSockets));
+
+  wireList.forEach(wire => {
+    let fromSocketIndex = sockets.indexOf(wire.fromSocket);
+    if (fromSocketIndex !== -1) {
+      sockets.splice(fromSocketIndex, 1);
+    }
+
+    let toSocketIndex = sockets.indexOf(wire.toSocket);
+    if (toSocketIndex !== -1) {
+      sockets.splice(toSocketIndex, 1);
+    }
+  });
+
+  return [
+    sockets.filter(socket => socket.role === Socket.INPUT),
+    sockets.filter(socket => socket.role === Socket.OUTPUT),
+  ];
+}
