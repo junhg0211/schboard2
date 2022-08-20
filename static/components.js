@@ -538,4 +538,16 @@ class PushbuttonComponent extends Component {
     this.reposition();
     this.calculate();
   }
+
+  tick() {
+    super.tick();
+
+    if (this.outSockets[0].on) {
+      let inGameX = this.camera.getBoardX(mouseX), inGameY = this.camera.getBoardY(mouseY);
+      if (
+        inGameX < this.x || this.x + this.size < inGameX
+        || inGameY < this.y || this.y + this.size < inGameY
+      ) this.outSockets[0].changeState(false);
+    }
+  }
 }
