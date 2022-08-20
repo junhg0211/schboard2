@@ -561,8 +561,9 @@ function tickAbstraction() {
       avgY = Math.round(avgY / abstractionComponents.length);
 
       let [inSockets, outSockets] = getInOutSockets(abstractionComponents, abstractionWires);
+      let name = prompt("What is the name?");
       components.push(new IntegratedComponent(
-        avgX, avgY, "IC", camera, inSockets, outSockets, abstractionComponents, abstractionWires
+        avgX, avgY, name, camera, inSockets, outSockets, abstractionComponents, abstractionWires
       ));
     }
   }
