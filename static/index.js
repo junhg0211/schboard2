@@ -102,7 +102,7 @@ function tickInput() {
 }
 
 // objects
-let camera = new Camera(0, 0, 10);
+let camera = new Camera(0, 0, 20);
 let centerIndicator = new PositionIndicator(0, 0, 'white', 1, camera);
 let grid = new Grid(camera);
 let selectingBox = new RectangleWithLine(0, 0, 0, 0, '#fff2', '#fffa', 1);
@@ -629,6 +629,10 @@ function tickSpaceDrag() {
       camera.targetX = (x2 + x1) / 2;
       camera.targetY = (y2 + y1) / 2;
       camera.targetZoom = 0.75 * Math.min(canvas.width / (x2 - x1), canvas.height / (y2 - y1));
+    } else {
+      camera.targetX = 0;
+      camera.targetY = 0;
+      camera.targetZoom = 20;
     }
   }
 }
