@@ -170,6 +170,7 @@ const WM_WIRE_ARRANGE = 'wire_arrange';
 const WM_DRAG = 'drag';
 const WM_ZOOM = 'zoom';
 const WM_UNABSTRACTION = 'unabstraction';
+const WM_INTERACTION = 'interaction';
 
 function getWorkMode() {
   return document.querySelector("input[name='work_mode']:checked").value;
@@ -455,6 +456,42 @@ function tickUnabstractionMode() {
   }
 }
 
+let interactiveIndicator = new CameraRectangleWithLine(0, 0, 0, 0, '#ff02', '#ff0a', 1, camera);
+function tickInteractionMode() {
+  let closestInteraction;
+  let closestDistance = Infinity;
+
+  let inGameX = camera.getBoardX(mouseX), inGameY = camera.getBoardY(mouseY);
+  components.forEach(component => {
+    if (component instanceof SwitchComponent) {
+      let distanceSquared = Math.pow(inGameX - component.x + component.size / 2, 2)
+        + Math.pow(inGameY - component.y + component.size / 2, 2);
+      if (distanceSquared < closestDistance) {
+        closestDistance = distanceSquared;
+        closestInteraction = component;
+      }
+    }
+  });
+
+  if (closestInteraction) {
+    interactiveIndicator.realX = closestInteraction.x;
+    interactiveIndicator.realY = closestInteraction.y;
+    interactiveIndicator.realWidth = closestInteraction.size;
+    interactiveIndicator.realHeight = closestInteraction.size;
+
+    if (isMouseDown(0)) {
+      if (
+        closestInteraction.x < inGameX && inGameX < closestInteraction.x + closestInteraction.size
+        && closestInteraction.y < inGameY && inGameY < closestInteraction.y + closestInteraction.size
+      ) closestInteraction.outSockets[0].changeState(!closestInteraction.outSockets[0].on);
+    }
+  } else {
+    interactiveIndicator.realWidth = interactiveIndicator.realHeight = 0;
+  }
+
+  interactiveIndicator.tick();
+}
+
 /*
  * work mode keyboard shortcuts
  */
@@ -473,6 +510,8 @@ function tickWorkMode() {
     tickZoomMode();
   } else if (workMode === WM_UNABSTRACTION) {
     tickUnabstractionMode();
+  } else if (workMode === WM_INTERACTION) {
+    tickInteractionMode();
   }
 
   if (isPressed('v')) {
@@ -487,6 +526,8 @@ function tickWorkMode() {
     setWorkMode(WM_ZOOM);
   } else if (isPressed('l')) {
     setWorkMode(WM_UNABSTRACTION);
+  } else if (isPressed("i")) {
+    setWorkMode(WM_INTERACTION);
   }
 }
 
@@ -708,6 +749,8 @@ function render() {
     wireHighlight.render();
   } else if (workMode === WM_UNABSTRACTION) {
     unabstractionBorder.render();
+  } else if (workMode === WM_INTERACTION) {
+    interactiveIndicator.render();
   }
 }
 

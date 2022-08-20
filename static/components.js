@@ -135,7 +135,7 @@ class Component {
     this.selected = false;
     this.delay = 1;
   }
-
+[0]
   setPos(x, y) {
     this.x = x;
     this.y = y;
@@ -520,4 +520,13 @@ function getComponentsBorder(componentList) {
   })
 
   return [x1, y1, x2, y2];
+}
+
+class SwitchComponent extends Component {
+  constructor(x, y, camera) {
+    super(x, y, "Switch", camera, [], [new Socket(Socket.OUTPUT, camera)])
+
+    this.reposition();
+    this.calculate();
+  }
 }
