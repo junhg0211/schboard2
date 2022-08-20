@@ -572,6 +572,12 @@ function tickComponentRotation() {
   }
 }
 
+function getXYBySize(size) {
+  return [
+    Math.round(camera.getBoardX(mouseX) - size/2),
+    Math.round(camera.getBoardY(mouseY) - size/2)
+  ];
+}
 /*
  * ticks the deletion and creation of components
  * like backspace to delete and o to OrComponent etc
@@ -590,20 +596,20 @@ function tickComponentMakeDelete() {
       selectedObjects.length = 0;
     }
   } else if (isDown('o')) {
-    let size = getComponentSizeBySocketCount(2);
-    let x = Math.round(camera.getBoardX(mouseX) - size/2);
-    let y = Math.round(camera.getBoardY(mouseY) - size/2);
+    let [x, y] = getXYBySize(getComponentSizeBySocketCount(2));
     components.push(new OrComponent(x, y, camera));
   } else if (isDown('t')) {
-    let size = getComponentSizeBySocketCount(1);
-    let x = Math.round(camera.getBoardX(mouseX) - size/2);
-    let y = Math.round(camera.getBoardY(mouseY) - size/2);
+    let [x, y] = getXYBySize(getComponentSizeBySocketCount(1));
     components.push(new NotComponent(x, y, camera));
   } else if (isDown('1')) {
-    let size = getComponentSizeBySocketCount(1);
-    let x = Math.round(camera.getBoardX(mouseX) - size/2);
-    let y = Math.round(camera.getBoardY(mouseY) - size/2);
+    let [x, y] = getXYBySize(getComponentSizeBySocketCount(1));
     components.push(new TrueComponent(x, y, camera));
+  } else if (isDown('y')) {
+    let [x, y] = getXYBySize(getComponentSizeBySocketCount(1));
+    components.push(new SwitchComponent(x, y, camera));
+  } else if (isDown('b')) {
+    let [x, y] = getXYBySize(getComponentSizeBySocketCount(1));
+    components.push(new PushbuttonComponent(x, y, camera));
   }
 }
 
