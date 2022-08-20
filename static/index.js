@@ -463,7 +463,7 @@ function tickInteractionMode() {
 
   let inGameX = camera.getBoardX(mouseX), inGameY = camera.getBoardY(mouseY);
   components.forEach(component => {
-    if (component instanceof SwitchComponent) {
+    if (component instanceof SwitchComponent || component instanceof PushbuttonComponent) {
       let distanceSquared = Math.pow(inGameX - component.x + component.size / 2, 2)
         + Math.pow(inGameY - component.y + component.size / 2, 2);
       if (distanceSquared < closestDistance) {
@@ -479,11 +479,19 @@ function tickInteractionMode() {
     interactiveIndicator.realWidth = closestInteraction.size;
     interactiveIndicator.realHeight = closestInteraction.size;
 
-    if (isMouseDown(0)) {
-      if (
-        closestInteraction.x < inGameX && inGameX < closestInteraction.x + closestInteraction.size
-        && closestInteraction.y < inGameY && inGameY < closestInteraction.y + closestInteraction.size
-      ) closestInteraction.outSockets[0].changeState(!closestInteraction.outSockets[0].on);
+    if (
+      closestInteraction.x < inGameX && inGameX < closestInteraction.x + closestInteraction.size
+      && closestInteraction.y < inGameY && inGameY < closestInteraction.y + closestInteraction.size
+    ) {
+      if (isMouseDown(0)) {
+        closestInteraction.outSockets[0].changeState(true);
+      } else if (isMouseUp(0)) {
+        if (closestInteraction instanceof SwitchComponent) {
+          closestInteraction.outSockets[0].changeState(!closestInteraction.outSockets[0].on);
+        } else {
+          closestInteraction.outSockets[0].changeState(false);
+        }
+      }
     }
   } else {
     interactiveIndicator.realWidth = interactiveIndicator.realHeight = 0;
