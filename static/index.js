@@ -464,8 +464,8 @@ function tickInteractionMode() {
   let inGameX = camera.getBoardX(mouseX), inGameY = camera.getBoardY(mouseY);
   components.forEach(component => {
     if (component instanceof SwitchComponent || component instanceof PushbuttonComponent) {
-      let distanceSquared = Math.pow(inGameX - component.x + component.size / 2, 2)
-        + Math.pow(inGameY - component.y + component.size / 2, 2);
+      let distanceSquared = Math.pow(component.x + component.size / 2 - inGameX, 2)
+        + Math.pow(component.y + component.size / 2 - inGameY, 2);
       if (distanceSquared < closestDistance) {
         closestDistance = distanceSquared;
         closestInteraction = component;
@@ -484,7 +484,9 @@ function tickInteractionMode() {
       && closestInteraction.y < inGameY && inGameY < closestInteraction.y + closestInteraction.size
     ) {
       if (isMouseDown(0)) {
-        closestInteraction.outSockets[0].changeState(true);
+        if (closestInteraction instanceof PushbuttonComponent) {
+          closestInteraction.outSockets[0].changeState(true);
+        }
       } else if (isMouseUp(0)) {
         if (closestInteraction instanceof SwitchComponent) {
           closestInteraction.outSockets[0].changeState(!closestInteraction.outSockets[0].on);
