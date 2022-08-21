@@ -585,33 +585,35 @@ function getXYBySize(size) {
  * like backspace to delete and o to OrComponent etc
  */
 function tickComponentMakeDelete() {
-  if (isDown('Delete')) {
-    if (selectedObjects.length === 0) {
-      let component = getClosestComponent(camera.getBoardX(mouseX), camera.getBoardY(mouseY));
-      if (component !== null) {
-        component.delete();
+  if (mouseX >= 0) {
+    if (isDown('Delete')) {
+      if (selectedObjects.length === 0) {
+        let component = getClosestComponent(camera.getBoardX(mouseX), camera.getBoardY(mouseY));
+        if (component !== null) {
+          component.delete();
+        }
+      } else {
+        selectedObjects.forEach(object => {
+          object.delete();
+        });
+        selectedObjects.length = 0;
       }
-    } else {
-      selectedObjects.forEach(object => {
-        object.delete();
-      });
-      selectedObjects.length = 0;
+    } else if (isDown('o')) {
+      let [x, y] = getXYBySize(getComponentSizeBySocketCount(2));
+      components.push(new OrComponent(x, y, camera));
+    } else if (isDown('t')) {
+      let [x, y] = getXYBySize(getComponentSizeBySocketCount(1));
+      components.push(new NotComponent(x, y, camera));
+    } else if (isDown('1')) {
+      let [x, y] = getXYBySize(getComponentSizeBySocketCount(1));
+      components.push(new TrueComponent(x, y, camera));
+    } else if (isDown('y')) {
+      let [x, y] = getXYBySize(getComponentSizeBySocketCount(1));
+      components.push(new SwitchComponent(x, y, camera));
+    } else if (isDown('b')) {
+      let [x, y] = getXYBySize(getComponentSizeBySocketCount(1));
+      components.push(new PushbuttonComponent(x, y, camera));
     }
-  } else if (isDown('o')) {
-    let [x, y] = getXYBySize(getComponentSizeBySocketCount(2));
-    components.push(new OrComponent(x, y, camera));
-  } else if (isDown('t')) {
-    let [x, y] = getXYBySize(getComponentSizeBySocketCount(1));
-    components.push(new NotComponent(x, y, camera));
-  } else if (isDown('1')) {
-    let [x, y] = getXYBySize(getComponentSizeBySocketCount(1));
-    components.push(new TrueComponent(x, y, camera));
-  } else if (isDown('y')) {
-    let [x, y] = getXYBySize(getComponentSizeBySocketCount(1));
-    components.push(new SwitchComponent(x, y, camera));
-  } else if (isDown('b')) {
-    let [x, y] = getXYBySize(getComponentSizeBySocketCount(1));
-    components.push(new PushbuttonComponent(x, y, camera));
   }
 }
 

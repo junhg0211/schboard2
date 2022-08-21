@@ -157,7 +157,9 @@ class Camera {
     }
 
     if (mouseScroll) {
-      this.targetZoom *= Math.exp(-mouseScroll / 500);
+      if (mouseX >= 0) {
+        this.targetZoom *= Math.exp(-mouseScroll / 500);
+      }
       mouseScroll = 0;
     }
 
