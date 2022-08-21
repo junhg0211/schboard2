@@ -160,6 +160,7 @@ changeTab(nowTab);
 // settings
 let calculationLimit = 2;
 let nextGameObjectId = 0;
+let nextIntegrationId = 0;
 let lastDirection = 0;
 let minimalSatisfaction = 1, maximalSatisfaction = 2;
 

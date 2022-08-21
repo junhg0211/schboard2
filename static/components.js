@@ -270,6 +270,10 @@ class Component {
     });
     components.splice(components.indexOf(this), 1);
   }
+
+  flatten() {
+
+  }
 }
 
 let componentCalculationQueue = null;
@@ -412,6 +416,10 @@ class TrueComponent extends Component {
   calculate() {
     this.outSockets[0].changeState(true);
   }
+
+  flatten() {
+    return ['true', [this.x, this.y]];
+  }
 }
 
 class NotComponent extends Component {
@@ -424,6 +432,10 @@ class NotComponent extends Component {
 
   calculate() {
     this.outSockets[0].changeState(!this.inSockets[0].on);
+  }
+
+  flatten() {
+    return ['not', [this.x, this.y], this.inSockets[0].on];
   }
 }
 
@@ -441,6 +453,10 @@ class OrComponent extends Component {
 
   calculate() {
     this.outSockets[0].changeState(this.inSockets[0].on || this.inSockets[1].on);
+  }
+
+  flatten() {
+    return ['or', [this.x, this.y], [this.inSockets[0].on, this.inSockets[1].on]];
   }
 }
 
@@ -465,6 +481,8 @@ class IntegratedComponent extends Component {
       }
     }
 
+    this.integrationId = nextIntegrationId++;
+
     this.reposition();
     this.calculate();
   }
@@ -477,6 +495,77 @@ class IntegratedComponent extends Component {
 
   calculate() {
     this.inComponents.forEach(component => component.calculate());
+  }
+
+  flatten() {
+    let usedComponents = [], structures = [];
+    this.components.forEach(component => {
+      if (!(component instanceof IntegratedComponent)) {
+        usedComponents.push(component.flatten());
+      } else {
+        let states = [];
+        let flatten = component.flatten();
+        flatten[3].forEach(usedComponent => {
+          if (
+            usedComponent[0] === "not"
+            || usedComponent[0] === "or"
+            || usedComponent[0] === "true"
+            || usedComponent[0] === "component_blueprint"
+          ) {
+            states.push(usedComponent[2]);
+          }
+        });
+
+        usedComponents.push(["integrated_blueprint", [component.x, component.y], states, component.integrationId]);
+
+        structures.push(...flatten[8]);
+        flatten[8].length = 0;
+
+        // upload structure
+        for (let i = 0; i < structures.length; i++)
+          if (component.integrationId === structures[i][2]) return;
+
+        structures.push(flatten);
+      }
+    });
+
+    let wires = [];
+    this.wires.forEach(wire => {
+      let fromSocket, toSocket;
+      for (let i = 0; i < this.components.length; i++) {
+        if (fromSocket === undefined) {
+          let fromSocketIndex = this.components[i].outSockets.indexOf(wire.fromSocket);
+          if (fromSocketIndex !== -1) fromSocket = [i, fromSocketIndex];
+        }
+        if (toSocket === undefined) {
+          let toSocketIndex = this.components[i].inSockets.indexOf(wire.toSocket);
+          if (toSocketIndex !== -1) toSocket = [i, toSocketIndex];
+        }
+      }
+      wires.push([fromSocket, toSocket]);
+    });
+
+    let inSockets = [], outSockets = [];
+    this.inSockets.forEach(socket => {
+      for (let i = 0; i < this.components.length; i++) {
+        let socketIndex = this.components[i].inSockets.indexOf(socket);
+        if (socketIndex !== -1) {
+          inSockets.push([i, socketIndex]);
+          break;
+        }
+      }
+    });
+    this.outSockets.forEach(socket => {
+      for (let i = 0; i < this.components.length; i++) {
+        let socketIndex = this.components[i].outSockets.indexOf(socket);
+        if (socketIndex !== -1) {
+          outSockets.push([i, socketIndex]);
+          break;
+        }
+      }
+    });
+
+    return ["integrated", [this.x, this.y], this.integrationId, usedComponents, wires, this.name, inSockets, outSockets, structures];
   }
 }
 
