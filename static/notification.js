@@ -3,18 +3,48 @@
  */
 
 const notification = document.getElementsByClassName("notification")[0];
-const title = document.getElementsByClassName("notification--title")[0];
-const content = document.getElementsByClassName("notification--content")[0];
-const buttonDiv = document.getElementsByClassName("notification--button")[0];
+const title = document.querySelector(".notification-title");
+const content = document.querySelector(".notification-content");
+const textInput = document.querySelector("#notification-text-input");
 
 let notificationOpen = false;
+let closeSignal = false;
+
+const SIGNAL_OK = "ok";
+const SIGNAL_CANCEL = "cancel";
 
 function openNotification() {
+  textInput.value = "";
+
   notification.style.display = "block";
   notificationOpen = true;
+}
+
+function okButton() {
+  closeSignal = SIGNAL_OK;
+  closeNotification();
+}
+
+function cancelButton() {
+  closeSignal = SIGNAL_CANCEL;
+  closeNotification();
 }
 
 function closeNotification() {
   notification.style.display = "none";
   notificationOpen = false;
+}
+
+function notificationPrompt(titleText, question) {
+  title.innerHTML = `<h1>${titleText}</h1>`;
+  content.innerHTML = `<p>${question}</p>`
+  openNotification();
+
+  return new Promise(resolve => {
+    (function waitFor() {
+      if (notificationOpen) setTimeout(waitFor, 100);
+      else if (closeSignal === SIGNAL_OK) resolve(textInput.value);
+      else resolve(null);
+    })()
+  });
 }

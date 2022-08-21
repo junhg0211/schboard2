@@ -663,10 +663,10 @@ function tickInfoTable() {
   infoSelectedComponents.innerText = selectedObjects.length;
 }
 
-function tickAbstraction() {
-  if (isDown('c')) {
-    if (selectedObjects.length > 1) {
-      let name = prompt("What is the name?");
+function abstract() {
+  if (selectedObjects.length > 1) {
+    notificationPrompt("통합 컴포넌트 이름 입력", "추상화된 컴포넌트에 이름을 지어주세요.")
+        .then(name => {
       if (name) {
         let abstractionComponents = [...selectedObjects];
         let abstractionWires = getIntersectWires(wires, abstractionComponents);
@@ -688,7 +688,13 @@ function tickAbstraction() {
           avgX, avgY, name, camera, inSockets, outSockets, abstractionComponents, abstractionWires
         ));
       }
-    }
+    });
+  }
+}
+
+function tickAbstraction() {
+  if (isDown('c')) {
+    abstract();
   }
 }
 
@@ -730,25 +736,27 @@ function tickCalculateComponents() {
 
 // game logic
 function tick() {
-  camera.tick();
+  if (!notificationOpen) {
+    camera.tick();
 
-  tickWorkMode();
-  tickSpaceDrag();
-  tickComponentRotation();
-  tickComponentMakeDelete();
-  tickInfoTable();
-  tickAbstraction();
+    tickWorkMode();
+    tickSpaceDrag();
+    tickComponentRotation();
+    tickComponentMakeDelete();
+    tickInfoTable();
+    tickAbstraction();
 
-  components.forEach(object => object.tick());
-  wires.forEach(wires => wires.tick());
+    components.forEach(object => object.tick());
+    wires.forEach(wires => wires.tick());
 
-  tickCalculateComponents();
+    tickCalculateComponents();
 
-  // camera world screen left, right, top and bottom for optimizing component and wire render
-  cameraLeft = camera.getBoardX(0);
-  cameraRight = camera.getBoardX(canvas.width);
-  cameraTop = camera.getBoardY(0);
-  cameraBottom = camera.getBoardY(canvas.height);
+    // camera world screen left, right, top and bottom for optimizing component and wire render
+    cameraLeft = camera.getBoardX(0);
+    cameraRight = camera.getBoardX(canvas.width);
+    cameraTop = camera.getBoardY(0);
+    cameraBottom = camera.getBoardY(canvas.height);
+  }
 
   tickInput();
 }

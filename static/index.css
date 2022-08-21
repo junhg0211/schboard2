@@ -82,6 +82,14 @@ html, body, .main-container {
     margin-bottom: 10px;
 }
 
+.notification-title :first-child {
+    margin-top: 0;
+}
+
+.notification-input input {
+    width: 100%;
+}
+
 button {
     padding: 10px;
 }
