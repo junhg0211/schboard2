@@ -510,7 +510,7 @@ class IntegratedComponent extends Component {
             usedComponent[0] === "not"
             || usedComponent[0] === "or"
             || usedComponent[0] === "true"
-            || usedComponent[0] === "component_blueprint"
+            || usedComponent[0] === "integrated_blueprint"
           ) {
             states.push(usedComponent[2]);
           }
