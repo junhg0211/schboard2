@@ -569,6 +569,58 @@ class IntegratedComponent extends Component {
   }
 }
 
+function structify(flattened, camera, structures) {
+  if (structures === undefined) structures = [];
+  if (flattened[0] === "true") {
+    return new TrueComponent(flattened[1][0], flattened[1][1], camera);
+  } else if (flattened[0] === "not") {
+    let result = new NotComponent(flattened[1][0], flattened[1][1], camera);
+    result.inSockets[0].on = flattened[2][0];
+    result.calculate();
+    return result;
+  } else if (flattened[0] === "or") {
+    let result = new OrComponent(flattened[1][0], flattened[1][1], camera);
+    result.inSockets[0].on = flattened[2][0];
+    result.inSockets[1].on = flattened[2][1];
+    result.calculate();
+    return result;
+  } else if (flattened[0] === "integrated") {
+    let usedComponents = [];
+    flattened[3].forEach(subcomponent => {
+      usedComponents.push(structify(subcomponent, camera, structures.concat(flattened[8])));
+    });
+
+    let inSockets = [], outSockets = [];
+    flattened[6].forEach(path => inSockets.push(usedComponents[path[0]].inSockets[path[1]]));
+    flattened[7].forEach(path => outSockets.push(usedComponents[path[0]].outSockets[path[1]]));
+
+    let usedWires = [];
+    flattened[4].forEach(connection => {
+      usedWires.push(new Wire(
+        usedComponents[connection[0][0]].outSockets[connection[0][1]],
+        usedComponents[connection[1][0]].inSockets[connection[1][1]],
+        camera
+      ));
+    });
+
+    let result = new IntegratedComponent(
+      flattened[1][0], flattened[1][1], flattened[5], camera, inSockets, outSockets, usedComponents, usedWires);
+
+    result.integrationId = flattened[2];
+    nextIntegrationId--;
+
+    return result;
+  } else if (flattened[0] === "integrated_blueprint") {
+    let structure = structures.find(index => index[2] === flattened[3]);
+    console.log(structure, structures, flattened);
+    for (let i = 0; i < flattened[2].length; i++) {
+      structure[3][i][2] = flattened[2][i];
+    }
+    structure[1] = flattened[1];
+    return structify(structure, camera, structures);
+  }
+}
+
 function getIntersectWires(wireList, ofComponents) {
   let sockets = [];
   ofComponents.forEach(component => sockets.push(...component.inSockets, ...component.outSockets));
