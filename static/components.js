@@ -622,7 +622,6 @@ function structify(flattened, camera, structures, recursion) {
     return result;
   } else if (flattened[0] === "integrated_blueprint") {
     let structure = structures.find(index => index[2] === flattened[3]);
-    console.log(structure, structures, flattened);
     for (let i = 0; i < flattened[2].length; i++) {
       structure[3][i][2] = flattened[2][i];
     }
