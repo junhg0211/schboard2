@@ -590,6 +590,13 @@ function structify(flattened, camera, structures, recursion) {
     result.inSockets[1].on = flattened[2][1];
     result.calculate();
     return result;
+  } else if (flattened[0] === 'switch') {
+    let result = new SwitchComponent(flattened[1][0], flattened[1][1], camera);
+    result.outSockets[0].on = flattened[2];
+    result.calculate();
+    return result;
+  } else if (flattened[0] === 'pushbutton') {
+    return new PushbuttonComponent(flattened[1][0], flattened[1][1], camera);
   } else if (flattened[0] === "integrated") {
     let usedComponents = [];
     flattened[3].forEach(subcomponent => {
@@ -679,6 +686,10 @@ class SwitchComponent extends Component {
     this.reposition();
     this.calculate();
   }
+
+  flatten() {
+    return ['switch', [this.x, this.y], this.outSockets[0].on];
+  }
 }
 
 class PushbuttonComponent extends Component {
@@ -699,5 +710,9 @@ class PushbuttonComponent extends Component {
         || inGameY < this.y || this.y + this.size < inGameY
       ) this.outSockets[0].changeState(false);
     }
+  }
+
+  flatten() {
+    return ['pushbutton', [this.x, this.y]];
   }
 }
