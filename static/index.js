@@ -172,12 +172,18 @@ const WM_DRAG = 'drag';
 const WM_ZOOM = 'zoom';
 const WM_UNABSTRACTION = 'unabstraction';
 const WM_INTERACTION = 'interaction';
+const WM_CLONE = 'clone';
 
 function getWorkMode() {
   return document.querySelector("input[name='work_mode']:checked").value;
 }
 
 function setWorkMode(workMode) {
+  if (workMode === WM_CLONE) {
+    firstTickCloneMode = true;
+    lastWorkMode = getWorkMode();
+  }
+
   document.querySelector(`input[name='work_mode'][value='${workMode}']`).checked = true;
 }
 
@@ -503,6 +509,41 @@ function tickInteractionMode() {
   interactiveIndicator.tick();
 }
 
+let lastWorkMode = null;
+let clonedStrings = [];
+let firstTickCloneMode = false;
+let x1, x2, y1, y2, width, height;
+function tickCloneMode() {
+  if (firstTickCloneMode) {
+    clonedStrings = [];
+    firstTickCloneMode = false;
+  }
+
+  if (clonedStrings.length === 0) {
+    if (selectedObjects.length > 0) {
+      selectedObjects.forEach(component => {
+        clonedStrings.push(component.flatten());
+      });
+      [x1, y1, x2, y2] = getComponentsBorder(selectedObjects);
+      width = x2 - x1;
+      height = y2 - y1;
+    } else {
+      setWorkMode(lastWorkMode);
+    }
+  } else {
+    if (isMouseDown(0)) {
+      let inGameX = Math.round(camera.getBoardX(mouseX)), inGameY = Math.round(camera.getBoardY(mouseY));
+      clonedStrings.forEach(strings => {
+        let component = structify(strings, camera);
+        component.x = component.x - x1 - width/2 + inGameX;
+        component.y = component.y - y1 - height/2 + inGameY;
+        component.reposition();
+        components.push(component);
+      });
+    }
+  }
+}
+
 /*
  * work mode keyboard shortcuts
  */
@@ -523,6 +564,8 @@ function tickWorkMode() {
     tickUnabstractionMode();
   } else if (workMode === WM_INTERACTION) {
     tickInteractionMode();
+  } else if (workMode === WM_CLONE) {
+    tickCloneMode();
   }
 
   if (isPressed('v')) {
@@ -539,6 +582,8 @@ function tickWorkMode() {
     setWorkMode(WM_UNABSTRACTION);
   } else if (isPressed("i")) {
     setWorkMode(WM_INTERACTION);
+  } else if (isPressed("f")) {
+    setWorkMode(WM_CLONE);
   }
 }
 
@@ -618,7 +663,6 @@ function tickComponentMakeDelete() {
   }
 }
 
-let lastWorkMode = null;
 function tickSpaceDrag() {
   if (isDown(" ")) {
     lastWorkMode = getWorkMode();
