@@ -569,13 +569,19 @@ class IntegratedComponent extends Component {
   }
 }
 
-function structify(flattened, camera, structures) {
+let wireUpdates = [];
+function structify(flattened, camera, structures, recursion) {
+  if (recursion === undefined) {
+    recursion = 0;
+    wireUpdates = [];
+  }
+
   if (structures === undefined) structures = [];
   if (flattened[0] === "true") {
     return new TrueComponent(flattened[1][0], flattened[1][1], camera);
   } else if (flattened[0] === "not") {
     let result = new NotComponent(flattened[1][0], flattened[1][1], camera);
-    result.inSockets[0].on = flattened[2][0];
+    result.inSockets[0].on = flattened[2];
     result.calculate();
     return result;
   } else if (flattened[0] === "or") {
@@ -587,7 +593,7 @@ function structify(flattened, camera, structures) {
   } else if (flattened[0] === "integrated") {
     let usedComponents = [];
     flattened[3].forEach(subcomponent => {
-      usedComponents.push(structify(subcomponent, camera, structures.concat(flattened[8])));
+      usedComponents.push(structify(subcomponent, camera, structures.concat(flattened[8]), recursion+1));
     });
 
     let inSockets = [], outSockets = [];
@@ -596,11 +602,15 @@ function structify(flattened, camera, structures) {
 
     let usedWires = [];
     flattened[4].forEach(connection => {
-      usedWires.push(new Wire(
+      let wire = new Wire(
         usedComponents[connection[0][0]].outSockets[connection[0][1]],
         usedComponents[connection[1][0]].inSockets[connection[1][1]],
         camera
-      ));
+      );
+      usedWires.push(wire);
+      if (wire.toSocket.on !== wire.on) {
+        wireUpdates.push(wire);
+      }
     });
 
     let result = new IntegratedComponent(
@@ -617,7 +627,7 @@ function structify(flattened, camera, structures) {
       structure[3][i][2] = flattened[2][i];
     }
     structure[1] = flattened[1];
-    return structify(structure, camera, structures);
+    return structify(structure, camera, structures, recursion+1);
   }
 }
 

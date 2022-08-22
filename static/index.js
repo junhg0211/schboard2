@@ -513,6 +513,7 @@ let lastWorkMode = null;
 let clonedStrings = [];
 let firstTickCloneMode = false;
 let x1, x2, y1, y2, width, height;
+let wireConnections = [];
 function tickCloneMode() {
   if (firstTickCloneMode) {
     clonedStrings = [];
@@ -524,6 +525,22 @@ function tickCloneMode() {
       selectedObjects.forEach(component => {
         clonedStrings.push(component.flatten());
       });
+
+      wireConnections = [];
+      getIntersectWires(wires, selectedObjects).forEach(wire => {
+        let fromSocketPath, toSocketPath, index, component;
+        for (let i = 0; i < selectedObjects.length; i++) {
+          component = selectedObjects[i];
+
+          index = component.outSockets.indexOf(wire.fromSocket);
+          if (index !== -1) fromSocketPath = [i, index];
+
+          index = component.inSockets.indexOf(wire.toSocket);
+          if (index !== -1) toSocketPath = [i, index];
+        }
+        wireConnections.push([fromSocketPath, toSocketPath]);
+      });
+
       [x1, y1, x2, y2] = getComponentsBorder(selectedObjects);
       width = x2 - x1;
       height = y2 - y1;
@@ -533,12 +550,32 @@ function tickCloneMode() {
   } else {
     if (isMouseDown(0)) {
       let inGameX = Math.round(camera.getBoardX(mouseX)), inGameY = Math.round(camera.getBoardY(mouseY));
+      let halfWidth = Math.round(width / 2), halfHeight = Math.round(height / 2);
+      let clonedComponents = [];
       clonedStrings.forEach(strings => {
         let component = structify(strings, camera);
-        component.x = component.x - x1 - width/2 + inGameX;
-        component.y = component.y - y1 - height/2 + inGameY;
+        component.x = component.x - x1 - halfWidth + inGameX;
+        component.y = component.y - y1 - halfHeight + inGameY;
         component.reposition();
+        component.calculate();
+        clonedComponents.push(component);
         components.push(component);
+
+        wireUpdates.forEach(wire => {
+          wire.calculate()
+        });
+      });
+
+      wireConnections.forEach(connection => {
+        let wire = new Wire(
+          clonedComponents[connection[0][0]].outSockets[connection[0][1]],
+          clonedComponents[connection[1][0]].inSockets[connection[1][1]],
+          camera
+        );
+        wires.push(wire);
+        if (wire.toSocket.on !== wire.on) {
+          wire.calculate();
+        }
       });
     }
   }
@@ -780,6 +817,8 @@ function tickCalculateComponents() {
 
 // game logic
 function tick() {
+  tickCalculateComponents();
+
   if (!notificationOpen) {
     camera.tick();
 
@@ -799,8 +838,6 @@ function tick() {
 
   components.forEach(object => object.tick());
   wires.forEach(wires => wires.tick());
-
-  tickCalculateComponents();
 
   tickInput();
 }
