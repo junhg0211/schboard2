@@ -744,6 +744,7 @@ function tickInfoTable() {
   infoSelectedComponents.innerText = selectedObjects.length;
 }
 
+const abstractComponentList = document.querySelector(".abstract-component");
 function abstract() {
   if (selectedObjects.length > 1) {
     notificationPrompt("통합 컴포넌트 이름 입력", "추상화된 컴포넌트에 이름을 지어주세요.")
@@ -765,9 +766,24 @@ function abstract() {
         avgY = Math.round(avgY / abstractionComponents.length);
 
         let [inSockets, outSockets] = getInOutSockets(abstractionComponents, abstractionWires);
-        components.push(new IntegratedComponent(
-          avgX, avgY, name, camera, inSockets, outSockets, abstractionComponents, abstractionWires
-        ));
+        let integratedComponent = new IntegratedComponent(
+          avgX, avgY, name, camera, inSockets, outSockets, abstractionComponents, abstractionWires);
+        components.push(integratedComponent);
+
+        let notificationCheckbox1 = document.querySelector("#notification-checkbox-1");
+        if (notificationCheckbox1.checked) {
+          let button = document.createElement('button');
+          button.onclick = () => {
+            selectedObjects = [integratedComponent];
+            setWorkMode(WM_CLONE);
+          };
+          button.innerText = name;
+
+          let li = document.createElement("li");
+          li.appendChild(button);
+
+          abstractComponentList.appendChild(li);
+        }
       }
     });
   }

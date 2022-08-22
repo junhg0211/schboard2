@@ -48,7 +48,8 @@ textInput.addEventListener("keypress", event => {
 
 function notificationPrompt(titleText, question) {
   title.innerHTML = `<h1>${titleText}</h1>`;
-  content.innerHTML = `<p>${question}</p>`
+  content.innerHTML = `<p>${question}</p>
+                       <p><label><input type="checkbox" id="notification-checkbox-1"> 추상화 컴포넌트 목록에 저장</label></p>`
   openNotification();
 
   return new Promise(resolve => {
