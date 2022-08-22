@@ -18,6 +18,16 @@ function openNotification() {
 
   notification.style.display = "block";
   notificationOpen = true;
+
+  textInput.focus();
+}
+
+function closeNotification() {
+  notification.style.display = "none";
+  notificationOpen = false;
+
+  tickInput();
+  keys = [];
 }
 
 function okButton() {
@@ -30,10 +40,11 @@ function cancelButton() {
   closeNotification();
 }
 
-function closeNotification() {
-  notification.style.display = "none";
-  notificationOpen = false;
-}
+textInput.addEventListener("keypress", event => {
+  if (event.key === "Enter") {
+    okButton();
+  }
+});
 
 function notificationPrompt(titleText, question) {
   title.innerHTML = `<h1>${titleText}</h1>`;

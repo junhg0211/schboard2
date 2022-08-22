@@ -746,17 +746,17 @@ function tick() {
     tickInfoTable();
     tickAbstraction();
 
-    components.forEach(object => object.tick());
-    wires.forEach(wires => wires.tick());
-
-    tickCalculateComponents();
-
     // camera world screen left, right, top and bottom for optimizing component and wire render
     cameraLeft = camera.getBoardX(0);
     cameraRight = camera.getBoardX(canvas.width);
     cameraTop = camera.getBoardY(0);
     cameraBottom = camera.getBoardY(canvas.height);
   }
+
+  components.forEach(object => object.tick());
+  wires.forEach(wires => wires.tick());
+
+  tickCalculateComponents();
 
   tickInput();
 }
