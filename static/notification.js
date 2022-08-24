@@ -46,10 +46,18 @@ textInput.addEventListener("keypress", event => {
   }
 });
 
-function notificationPrompt(titleText, question) {
-  title.innerHTML = `<h1>${titleText}</h1>`;
-  content.innerHTML = `<p>${question}</p>
-                       <p><label><input type="checkbox" id="notification-checkbox-1"> 추상화 컴포넌트 목록에 저장</label></p>`
+function prepareNotificationAbstraction() {
+  title.innerHTML = "<h1>통합 컴포넌트 이름 입력</h1>"
+  content.innerHTML = `<p>추상화된 컴포넌트에 이름을 지어주세요.</p>`;
+  content.innerHTML += `<p><label><input type="checkbox" id="notification-checkbox-1"> 추상화 컴포넌트 목록에 저장</label></p>`;
+}
+
+function prepareNotificationAbstractDelete(name) {
+  title.innerHTML = "<h1>추상화 컴포넌트 삭제</h1>"
+  content.innerHTML = `<p>추상화 컴포넌트를 삭제하라면 컴포넌트의 이름(<code>${name}</code>)을 입력하세요.</p>`
+}
+
+function notificationPrompt() {
   openNotification();
 
   return new Promise(resolve => {

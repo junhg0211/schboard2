@@ -747,7 +747,8 @@ function tickInfoTable() {
 const abstractComponentList = document.querySelector(".abstract-component");
 function abstract() {
   if (selectedObjects.length > 1) {
-    notificationPrompt("통합 컴포넌트 이름 입력", "추상화된 컴포넌트에 이름을 지어주세요.")
+    prepareNotificationAbstraction();
+    notificationPrompt()
         .then(name => {
       if (name) {
         let abstractionComponents = [...selectedObjects];
@@ -772,17 +773,39 @@ function abstract() {
 
         let notificationCheckbox1 = document.querySelector("#notification-checkbox-1");
         if (notificationCheckbox1.checked) {
-          let button = document.createElement('button');
+          let tr = document.createElement("tr");
+
+          let td;
+          td = document.createElement("td");
+          td.innerHTML = `<p>${name}</p>`;
+          tr.appendChild(td)
+
+          let button;
+          button = document.createElement("button");
           button.onclick = () => {
             selectedObjects = [integratedComponent];
             setWorkMode(WM_CLONE);
-          };
-          button.innerText = name;
+          }
+          button.innerText = "사용하기";
+          td = document.createElement("td");
+          td.appendChild(button);
+          tr.appendChild(td);
 
-          let li = document.createElement("li");
-          li.appendChild(button);
+          button = document.createElement("button");
+          button.onclick = () => {
+            prepareNotificationAbstractDelete(name);
+            notificationPrompt().then(answer => {
+              if (answer === name) {
+                abstractComponentList.removeChild(tr);
+              }
+            });
+          }
+          button.innerText = "삭제하기";
+          td = document.createElement("td");
+          td.appendChild(button);
+          tr.appendChild(td);
 
-          abstractComponentList.appendChild(li);
+          abstractComponentList.appendChild(tr);
         }
       }
     });
