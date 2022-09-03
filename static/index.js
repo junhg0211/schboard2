@@ -784,6 +784,7 @@ function abstract() {
           button = document.createElement("button");
           button.onclick = () => {
             selectedObjects = [integratedComponent];
+            clonedStrings = [integratedComponent.flatten()];
             setWorkMode(WM_CLONE);
           }
           button.innerText = "사용하기";
