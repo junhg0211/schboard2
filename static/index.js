@@ -511,13 +511,21 @@ function tickInteractionMode() {
 
 let lastWorkMode = null;
 let clonedStrings = [];
-let firstTickCloneMode = false;
+let firstTickCloneMode = false, clonedStringNotResetting = false;
 let x1, x2, y1, y2, width, height;
 let wireConnections = [];
+let preconfiguredStructure = null;
 function tickCloneMode() {
-  if (firstTickCloneMode) {
+  if (firstTickCloneMode && !clonedStringNotResetting) {
     clonedStrings = [];
     firstTickCloneMode = false;
+  }
+  if (clonedStringNotResetting) {
+    clonedStringNotResetting = false;
+    firstTickCloneMode = false;
+    [x1, y1, x2, y2] = getComponentsBorder(selectedObjects);
+    width = x2 - x1;
+    height = y2 - y1;
   }
 
   if (clonedStrings.length === 0) {
@@ -782,9 +790,13 @@ function abstract() {
 
           let button;
           button = document.createElement("button");
+          let signal = integratedComponent.getSignal();
           button.onclick = () => {
             selectedObjects = [integratedComponent];
-            clonedStrings = [integratedComponent.flatten()];
+            let integrated = integratedComponent.flatten();
+            clonedStrings = [["integrated_blueprint", [0, 0], signal, integratedComponent.integrationId]];
+            clonedStringNotResetting = true;
+            preconfiguredStructure = integrated;
             setWorkMode(WM_CLONE);
           }
           button.innerText = "사용하기";

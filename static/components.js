@@ -271,9 +271,9 @@ class Component {
     components.splice(components.indexOf(this), 1);
   }
 
-  flatten() {
+  getSignal() {}
 
-  }
+  flatten() {}
 }
 
 let componentCalculationQueue = null;
@@ -434,8 +434,12 @@ class NotComponent extends Component {
     this.outSockets[0].changeState(!this.inSockets[0].on);
   }
 
+  getSignal() {
+    return this.inSockets[0].on;
+  }
+
   flatten() {
-    return ['not', [this.x, this.y], this.inSockets[0].on];
+    return ['not', [this.x, this.y], this.getSignal()];
   }
 }
 
@@ -455,8 +459,12 @@ class OrComponent extends Component {
     this.outSockets[0].changeState(this.inSockets[0].on || this.inSockets[1].on);
   }
 
+  getSignal() {
+    return [this.inSockets[0].on, this.inSockets[1].on];
+  }
+
   flatten() {
-    return ['or', [this.x, this.y], [this.inSockets[0].on, this.inSockets[1].on]];
+    return ['or', [this.x, this.y], this.getSignal()];
   }
 }
 
@@ -495,6 +503,12 @@ class IntegratedComponent extends Component {
 
   calculate() {
     this.inComponents.forEach(component => component.calculate());
+  }
+
+  getSignal() {
+    let result = [];
+    this.components.forEach(component => result.push(component.getSignal()));
+    return result;
   }
 
   flatten() {
@@ -574,6 +588,7 @@ function structify(flattened, camera, structures, recursion) {
   if (recursion === undefined) {
     recursion = 0;
     wireUpdates = [];
+    structures = [preconfiguredStructure];
   }
 
   if (structures === undefined) structures = [];
