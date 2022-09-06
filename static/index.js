@@ -794,7 +794,7 @@ function abstract() {
           button.onclick = () => {
             selectedObjects = [integratedComponent];
             let integrated = integratedComponent.flatten();
-            clonedStrings = [["integrated_blueprint", [0, 0], signal, integratedComponent.integrationId]];
+            clonedStrings = [["integrated_blueprint", [integratedComponent.x, integratedComponent.y], signal, integratedComponent.integrationId]];
             clonedStringNotResetting = true;
             preconfiguredStructure = integrated;
             setWorkMode(WM_CLONE);
