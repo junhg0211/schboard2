@@ -574,6 +574,7 @@ function tickCloneMode() {
         });
       });
 
+      console.log(clonedComponents, wireConnections);
       wireConnections.forEach(connection => {
         let wire = new Wire(
           clonedComponents[connection[0][0]].outSockets[connection[0][1]],
@@ -793,6 +794,7 @@ function abstract() {
           let signal = integratedComponent.getSignal();
           button.onclick = () => {
             selectedObjects = [integratedComponent];
+            wireConnections = [];
             let integrated = integratedComponent.flatten();
             clonedStrings = [["integrated_blueprint", [integratedComponent.x, integratedComponent.y], signal, integratedComponent.integrationId]];
             clonedStringNotResetting = true;
