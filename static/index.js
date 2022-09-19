@@ -574,7 +574,6 @@ function tickCloneMode() {
         });
       });
 
-      console.log(clonedComponents, wireConnections);
       wireConnections.forEach(connection => {
         let wire = new Wire(
           clonedComponents[connection[0][0]].outSockets[connection[0][1]],
