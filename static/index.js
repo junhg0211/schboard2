@@ -756,72 +756,75 @@ const abstractComponentList = document.querySelector(".abstract-component");
 function abstract() {
   if (selectedObjects.length > 1) {
     prepareNotificationAbstraction();
-    notificationPrompt()
-        .then(name => {
-      if (name) {
-        let abstractionComponents = [...selectedObjects];
-        let abstractionWires = getIntersectWires(wires, abstractionComponents);
+    notificationPrompt().then(name => {
+      if (!name) return;
 
-        let avgX = 0, avgY = 0;
+      let abstractionComponents = [...selectedObjects];
+      let abstractionWires = getIntersectWires(wires, abstractionComponents);
 
-        abstractionComponents.forEach(component => {
-          components.splice(components.indexOf(component), 1)
-          avgX += component.x;
-          avgY += component.y;
-        });
-        abstractionWires.forEach(wire => wires.splice(wires.indexOf(wire), 1));
+      let avgX = 0, avgY = 0;
 
-        avgX = Math.round(avgX / abstractionComponents.length);
-        avgY = Math.round(avgY / abstractionComponents.length);
+      abstractionComponents.forEach(component => {
+        components.splice(components.indexOf(component), 1)
+        avgX += component.x;
+        avgY += component.y;
+      });
+      avgX = Math.round(avgX / abstractionComponents.length);
+      avgY = Math.round(avgY / abstractionComponents.length);
 
-        let [inSockets, outSockets] = getInOutSockets(abstractionComponents, abstractionWires);
-        let integratedComponent = new IntegratedComponent(
-          avgX, avgY, name, camera, inSockets, outSockets, abstractionComponents, abstractionWires);
-        components.push(integratedComponent);
+      abstractionWires.forEach(wire => wires.splice(wires.indexOf(wire), 1));
+      // remove selected wires from the tab
 
-        let notificationCheckbox1 = document.querySelector("#notification-checkbox-1");
-        if (notificationCheckbox1.checked) {
-          let tr = document.createElement("tr");
+      let [inSockets, outSockets] = getInOutSockets(abstractionComponents, abstractionWires);
+      let integratedComponent = new IntegratedComponent(
+        avgX, avgY, name, camera, inSockets, outSockets, abstractionComponents, abstractionWires);
+      components.push(integratedComponent);
 
-          let td;
-          td = document.createElement("td");
-          td.innerHTML = `<p>${name}</p>`;
-          tr.appendChild(td)
+      let notificationCheckbox1 = document.querySelector("#notification-checkbox-1");
 
-          let button;
-          button = document.createElement("button");
-          let signal = integratedComponent.getSignal();
-          button.onclick = () => {
-            selectedObjects = [integratedComponent];
-            wireConnections = [];
-            let integrated = integratedComponent.flatten();
-            clonedStrings = [["integrated_blueprint", [integratedComponent.x, integratedComponent.y], signal, integratedComponent.integrationId]];
-            clonedStringNotResetting = true;
-            preconfiguredStructure = integrated;
-            setWorkMode(WM_CLONE);
-          }
-          button.innerText = "사용하기";
-          td = document.createElement("td");
-          td.appendChild(button);
-          tr.appendChild(td);
+      if (!notificationCheckbox1.checked) return;
 
-          button = document.createElement("button");
-          button.onclick = () => {
-            prepareNotificationAbstractDelete(name);
-            notificationPrompt().then(answer => {
-              if (answer === name) {
-                abstractComponentList.removeChild(tr);
-              }
-            });
-          }
-          button.innerText = "삭제하기";
-          td = document.createElement("td");
-          td.appendChild(button);
-          tr.appendChild(td);
+      let tr = document.createElement("tr");
 
-          abstractComponentList.appendChild(tr);
-        }
+      let td;
+
+      td = document.createElement("td");
+      td.innerHTML = `<p>${name}</p>`;
+      tr.appendChild(td)
+
+      let button;
+
+      button = document.createElement("button");
+      let signal = integratedComponent.getSignal();
+      button.onclick = () => {
+        selectedObjects = [integratedComponent];
+        wireConnections = [];
+        clonedStrings = [["integrated_blueprint", [integratedComponent.x, integratedComponent.y], signal, integratedComponent.integrationId]];
+        clonedStringNotResetting = true;
+        preconfiguredStructure = integratedComponent.flatten();
+        setWorkMode(WM_CLONE);
       }
+      button.innerText = "사용하기";
+
+      td = document.createElement("td");
+      td.appendChild(button);
+      tr.appendChild(td);
+      button = document.createElement("button");
+      button.onclick = () => {
+        prepareNotificationAbstractDelete(name);
+        notificationPrompt().then(answer => {
+          if (answer === name) {
+            abstractComponentList.removeChild(tr);
+          }
+        });
+      }
+      button.innerText = "삭제하기";
+
+      td = document.createElement("td");
+      td.appendChild(button);
+      tr.appendChild(td);
+
+      abstractComponentList.appendChild(tr);
     });
   }
 }
