@@ -157,7 +157,7 @@ function changeTab(name) {
   pathDiv.innerText = name;
 }
 
-function stringifyTab(tab) {
+function stringifyTab(tab, abstractComponentIds) {
   let result = {
     name: tab.name,
     components: [],
@@ -171,7 +171,13 @@ function stringifyTab(tab) {
   // result.queuedComponentIndexes will contain the index of components in result.components
   // which must be also contained on componentCalculationQueue when this stringified tab is structured.
 
-  tab.components.forEach(component => result.components.push(component.flatten()));
+  tab.components.forEach(component => {
+    if (component instanceof IntegratedComponent && abstractComponentIds.indexOf(component.integrationId) !== -1) {
+      result.components.push(makeBlueprintString(component, component.getSignal()));
+    } else {
+      result.components.push(component.flatten())
+    }
+  });
 
   tab.wires.forEach(wire => {
     let fromSocket = wire.fromSocket;
@@ -208,10 +214,28 @@ function pack() {
   let result = {
     nextIntegrationId: nextIntegrationId,
     nowTab: nowTab,
-    tabs: []
+    tabs: [],
+    abstractedComponents: []
   };
 
-  tabs.forEach(tab => result.tabs.push(stringifyTab(tab)));
+  let workMode = getWorkMode();
+
+  for (let i = 0; i < abstractComponentList.children.length; i++) {
+    abstractComponentList.children[i].children[1].children[0].onclick();
+
+    // component = selectedObjects[0]
+    // flattenedComponent = preconfiguredStructure
+    // signal = clonedString[0][2]
+    result.abstractedComponents.push([preconfiguredStructure, clonedStrings[0][2]]);
+  }
+
+  setWorkMode(workMode);
+
+  tabs.forEach(tab => {
+    result.tabs.push(stringifyTab(tab, result.abstractedComponents.map(structure => structure[0][2])));
+    // structure[0] is flattened integrated component
+    // and structure[0][2] is its integration id
+  });
 
   return result;
 }
@@ -831,6 +855,10 @@ function tickInfoTable() {
   infoSelectedComponents.innerText = selectedObjects.length;
 }
 
+function makeBlueprintString(integratedComponent, signal) {
+  return ["integrated_blueprint", [integratedComponent.x, integratedComponent.y], signal, integratedComponent.integrationId];
+}
+
 const abstractComponentList = document.querySelector(".abstract-component");
 function abstract() {
   if (selectedObjects.length > 1) {
@@ -878,7 +906,7 @@ function abstract() {
       button.onclick = () => {
         selectedObjects = [integratedComponent];
         wireConnections = [];
-        clonedStrings = [["integrated_blueprint", [integratedComponent.x, integratedComponent.y], signal, integratedComponent.integrationId]];
+        clonedStrings = [makeBlueprintString(integratedComponent, signal)];
         clonedStringNotResetting = true;
         preconfiguredStructure = integratedComponent.flatten();
         setWorkMode(WM_CLONE);
