@@ -215,7 +215,12 @@ function pack() {
     nextIntegrationId: nextIntegrationId,
     nowTab: nowTab,
     tabs: [],
-    abstractedComponents: []
+    abstractedComponents: [],
+    camera: {
+      x: camera.x,
+      y: camera.y,
+      zoom: camera.zoom,
+    }
   };
 
   let workMode = getWorkMode();
