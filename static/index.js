@@ -315,6 +315,11 @@ function load(projectJSON) {
   changeTab(projectJSON.nowTab);
 }
 
+document.getElementById("component-file").addEventListener("change", (e) => {
+  // noinspection JSCheckFunctionSignatures
+  e.target.files[0].text().then(content => JSON.parse(content)).then(content => load(content));
+});
+
 // settings
 let calculationLimit = 2;
 let nextGameObjectId = 0;
