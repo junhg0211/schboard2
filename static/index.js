@@ -157,6 +157,36 @@ function changeTab(name) {
 createTab(nowTab);
 changeTab(nowTab);
 
+// packs
+/*
+ * creating the packed project
+ */
+function pack() {
+  let result = {};
+
+  return result;
+}
+
+/*
+ * make a download link for packed project and invoke the download
+ */
+function save() {
+  let content = JSON.stringify(pack());
+
+  let filename = "components.json";
+  let file = new File([content], filename);
+  let a = document.createElement("a"),
+      url = URL.createObjectURL(file);
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(function () {
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+  }, 0);
+}
+
 // settings
 let calculationLimit = 2;
 let nextGameObjectId = 0;
