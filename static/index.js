@@ -143,6 +143,9 @@ function createTab(name) {
 
 const pathDiv = document.querySelector(".path");
 
+/*
+ * switch current tab
+ */
 function changeTab(name) {
   nowTab = name;
 
@@ -154,6 +157,46 @@ function changeTab(name) {
   pathDiv.innerText = name;
 }
 
+function stringifyTab(tab) {
+  let result = {
+    name: tab.name,
+    components: [],
+    wireIndexes: [],
+    queuedComponentIndexes: []
+  };
+  // result.wireIndexes will contain the socket addresses of components.
+  // for example, if enabled (state = true) wire A is originally connected from result.components[1]'s 1st outSockets
+  // to result.components[0]'s 2nd inSockets, wire A will be represented as [1, 0, 0, 1, true].
+  //
+  // result.queuedComponentIndexes will contain the index of components in result.components
+  // which must be also contained on componentCalculationQueue when this stringified tab is structured.
+
+  tab.components.forEach(component => result.components.push(component.flatten()));
+
+  tab.wires.forEach(wire => {
+    let fromSocket = wire.fromSocket;
+    let toSocket = wire.toSocket;
+
+    let fromSocketComponent = getConnectedComponent(fromSocket, tab.components);
+    let toSocketComponent = getConnectedComponent(toSocket, tab.components);
+
+    result.wireIndexes.push([
+      tab.components.indexOf(fromSocketComponent),
+      fromSocketComponent.outSockets.indexOf(fromSocket),
+      tab.components.indexOf(toSocketComponent),
+      toSocketComponent.inSockets.indexOf(toSocket),
+      wire.on
+    ]);
+  });
+
+  tab.componentCalculationQueue.forEach(component => {
+    if (tab.componentCalculationQueue.indexOf(component) !== -1)
+      result.queuedComponentIndexes.push(tab.components.indexOf(component));
+  });
+
+  return result;
+}
+
 createTab(nowTab);
 changeTab(nowTab);
 
@@ -162,7 +205,13 @@ changeTab(nowTab);
  * creating the packed project
  */
 function pack() {
-  let result = {};
+  let result = {
+    nextIntegrationId: nextIntegrationId,
+    nowTab: nowTab,
+    tabs: []
+  };
+
+  tabs.forEach(tab => result.tabs.push(stringifyTab(tab)));
 
   return result;
 }
