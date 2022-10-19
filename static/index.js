@@ -188,8 +188,6 @@ function stringifyTab(tab, abstractComponentIds) {
     let fromSocketComponent = getConnectedComponent(fromSocket, tab.components, true);
     let toSocketComponent = getConnectedComponent(toSocket, tab.components, true);
 
-    console.log(fromSocketComponent, toSocketComponent);
-
     result.wireIndexes.push([
       tab.components.indexOf(fromSocketComponent),
       fromSocketComponent.outSockets.indexOf(fromSocket),
