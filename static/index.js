@@ -132,6 +132,8 @@ function getTab(name) {
 }
 
 function createTab(name) {
+  if (getTab(name)) return;
+
   let tab = newTab(name);
   tabs.push(tab);
   let li = document.createElement("li");
@@ -143,6 +145,9 @@ function createTab(name) {
 
 const pathDiv = document.querySelector(".path");
 
+/*
+ * switch current tab
+ */
 function changeTab(name) {
   nowTab = name;
 
@@ -154,8 +159,166 @@ function changeTab(name) {
   pathDiv.innerText = name;
 }
 
+function stringifyTab(tab, abstractComponentIds) {
+  let result = {
+    name: tab.name,
+    components: [],
+    wireIndexes: [],
+    queuedComponentIndexes: []
+  };
+  // result.wireIndexes will contain the socket addresses of components.
+  // for example, if enabled (state = true) wire A is originally connected from result.components[1]'s 1st outSockets
+  // to result.components[0]'s 2nd inSockets, wire A will be represented as [1, 0, 0, 1, true].
+  //
+  // result.queuedComponentIndexes will contain the index of components in result.components
+  // which must be also contained on componentCalculationQueue when this stringified tab is structured.
+
+  tab.components.forEach(component => {
+    if (component instanceof IntegratedComponent && abstractComponentIds.indexOf(component.integrationId) !== -1) {
+      result.components.push(makeBlueprintString(component, component.getSignal()));
+    } else {
+      result.components.push(component.flatten())
+    }
+  });
+
+  tab.wires.forEach(wire => {
+    let fromSocket = wire.fromSocket;
+    let toSocket = wire.toSocket;
+
+    let fromSocketComponent = getConnectedComponent(fromSocket, tab.components, true);
+    let toSocketComponent = getConnectedComponent(toSocket, tab.components, true);
+
+    result.wireIndexes.push([
+      tab.components.indexOf(fromSocketComponent),
+      fromSocketComponent.outSockets.indexOf(fromSocket),
+      tab.components.indexOf(toSocketComponent),
+      toSocketComponent.inSockets.indexOf(toSocket),
+      wire.on
+    ]);
+  });
+
+  tab.componentCalculationQueue.forEach(component => {
+    if (tab.componentCalculationQueue.indexOf(component) !== -1)
+      result.queuedComponentIndexes.push(tab.components.indexOf(component));
+  });
+
+  return result;
+}
+
 createTab(nowTab);
 changeTab(nowTab);
+
+// packs
+/*
+ * creating the packed project
+ */
+function pack() {
+  let result = {
+    nextIntegrationId: nextIntegrationId,
+    nowTab: nowTab,
+    tabs: [],
+    abstractedComponents: [],
+    camera: {
+      x: camera.targetX,
+      y: camera.targetY,
+      zoom: camera.targetZoom,
+    }
+  };
+
+  let workMode = getWorkMode();
+
+  for (let i = 0; i < abstractComponentList.children.length; i++) {
+    abstractComponentList.children[i].children[1].children[0].onclick();
+
+    // component = selectedObjects[0]
+    // flattenedComponent = preconfiguredStructure
+    // signal = clonedString[0][2]
+    let flattened = selectedObjects[0].flatten();
+    flattened[8] = [];
+    result.abstractedComponents.push([flattened, clonedStrings[0][2]]);
+  }
+
+  setWorkMode(workMode);
+
+  tabs.forEach(tab => {
+    result.tabs.push(stringifyTab(tab, result.abstractedComponents.map(structure => structure[0][2])));
+    // structure[0] is flattened integrated component
+    // and structure[0][2] is its integration id
+  });
+
+  return result;
+}
+
+/*
+ * make a download link for packed project and invoke the download
+ */
+function save() {
+  let content = JSON.stringify(pack());
+
+  let filename = "components.json";
+  let file = new File([content], filename);
+  let a = document.createElement("a"),
+      url = URL.createObjectURL(file);
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(function () {
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+  }, 0);
+}
+
+function load(projectJSON) {
+  camera.targetX = projectJSON.camera.x;
+  camera.targetY = projectJSON.camera.y;
+  camera.targetZoom = projectJSON.camera.zoom;
+
+  nextIntegrationId = projectJSON.nextIntegrationId;
+
+  let structures = [];
+  projectJSON.abstractedComponents.forEach(data => {
+    let [component, signal] = data;
+    preconfiguredStructure = component;
+    let componentStructured = structify(component, camera, structures, 0);
+    structures.push(component);
+    appendIntegratedComponentOnList(component[5], componentStructured, component, signal);
+  });
+
+  projectJSON.tabs.forEach(tab => {
+    createTab(tab.name);
+    changeTab(tab.name);
+
+    components.length = 0;
+    tab.components.forEach(component => {
+      let structified;
+      if (component[0] === "integrated_blueprint") {
+        structified = structify(component, camera, structures, 0);
+      } else {
+        structified = structify(component, camera);
+      }
+      components.push(structified);
+    });
+
+    tab.wireIndexes.forEach(indexes => {
+      let [fromCI, fromSI, toCI, toSI] = indexes;
+      // CI = component index
+      // SI = socket index
+      let fromComponent = components[fromCI], toComponent = components[toCI];
+      let fromSocket = fromComponent.outSockets[fromSI], toSocket = toComponent.inSockets[toSI];
+      connectWire(fromSocket, toSocket, camera);
+    });
+
+    tab.queuedComponentIndexes.forEach(index => componentCalculationQueue.push(components[index]));
+  });
+
+  changeTab(projectJSON.nowTab);
+}
+
+document.getElementById("component-file").addEventListener("change", (e) => {
+  // noinspection JSCheckFunctionSignatures
+  e.target.files[0].text().then(content => JSON.parse(content)).then(content => load(content));
+});
 
 // settings
 let calculationLimit = 2;
@@ -309,6 +472,39 @@ function getClosestSocket(boardX, boardY) {
   return closestSocket;
 }
 
+function connectWire(fromSocket, toSocket, camera) {
+  let wire = new Wire(fromSocket, toSocket, camera);
+
+  // check if wire is already existing,
+  // if so, delete it
+  let add = true;
+  wires.forEach(object => {
+    if (object.isSameWith(wire)) {
+      wires.splice(wires.indexOf(object), 1);
+      wire.toSocket.available = true;
+      wire.toSocket.changeState(false);
+      add = false;
+    }
+  });
+
+  // otherwise, add it
+  if (!add) return;
+
+  if (wire.toSocket.available) {
+    wire.toSocket.available = false;
+  } else {
+    // find a socket that already is connected to the toSocket
+    // and delete it
+    wires.forEach(object => {
+      if (object.toSocket === wire.toSocket) {
+        wires.splice(wires.indexOf(object), 1);
+      }
+    });
+  }
+  wires.push(wire);
+  wire.calculate();
+}
+
 let highlightedSocket = null;
 let startSocket = null;
 function tickWireMode() {
@@ -322,37 +518,7 @@ function tickWireMode() {
     }
 
     if (startSocket.role === Socket.OUTPUT && highlightedSocket.role === Socket.INPUT) {
-      let wire = new Wire(startSocket, highlightedSocket, camera);
-
-      // check if wire is already existing,
-      // if so, delete it
-      let add = true;
-      wires.forEach(object => {
-        if (object.isSameWith(wire)) {
-          wires.splice(wires.indexOf(object), 1);
-          wire.toSocket.available = true;
-          wire.toSocket.changeState(false);
-          add = false;
-        }
-      });
-      // otherwise, add it
-      if (add) {
-        if (wire.toSocket.available) {
-          wire.toSocket.available = false;
-        } else {
-          // find a socket that already is connected to the toSocket
-          // and delete it
-          wires.forEach(object => {
-            if (object.toSocket === wire.toSocket) {
-              wires.splice(wires.indexOf(object), 1);
-            }
-          });
-        }
-
-        // noinspection JSCheckFunctionSignatures
-        wires.push(wire);
-        wire.calculate();
-      }
+      connectWire(startSocket, highlightedSocket, camera);
     }
   }
 
@@ -752,6 +918,53 @@ function tickInfoTable() {
   infoSelectedComponents.innerText = selectedObjects.length;
 }
 
+function makeBlueprintString(integratedComponent, signal) {
+  return ["integrated_blueprint", [integratedComponent.x, integratedComponent.y], signal, integratedComponent.integrationId];
+}
+
+function appendIntegratedComponentOnList(name, integratedComponent, flattenedComponent, signal) {
+  let tr = document.createElement("tr");
+
+  let td;
+
+  td = document.createElement("td");
+  td.innerHTML = `<p>${name}</p>`;
+  tr.appendChild(td)
+
+  let button;
+
+  button = document.createElement("button");
+  button.onclick = () => {
+    selectedObjects = [integratedComponent];
+    wireConnections = [];
+    clonedStrings = [makeBlueprintString(integratedComponent, signal)];
+    clonedStringNotResetting = true;
+    preconfiguredStructure = flattenedComponent;
+    setWorkMode(WM_CLONE);
+  }
+  button.innerText = "사용하기";
+
+  td = document.createElement("td");
+  td.appendChild(button);
+  tr.appendChild(td);
+  button = document.createElement("button");
+  button.onclick = () => {
+    prepareNotificationAbstractDelete(name);
+    notificationPrompt().then(answer => {
+      if (answer === name) {
+        abstractComponentList.removeChild(tr);
+      }
+    });
+  }
+  button.innerText = "삭제하기";
+
+  td = document.createElement("td");
+  td.appendChild(button);
+  tr.appendChild(td);
+
+  abstractComponentList.appendChild(tr);
+}
+
 const abstractComponentList = document.querySelector(".abstract-component");
 function abstract() {
   if (selectedObjects.length > 1) {
@@ -784,47 +997,7 @@ function abstract() {
 
       if (!notificationCheckbox1.checked) return;
 
-      let tr = document.createElement("tr");
-
-      let td;
-
-      td = document.createElement("td");
-      td.innerHTML = `<p>${name}</p>`;
-      tr.appendChild(td)
-
-      let button;
-
-      button = document.createElement("button");
-      let signal = integratedComponent.getSignal();
-      button.onclick = () => {
-        selectedObjects = [integratedComponent];
-        wireConnections = [];
-        clonedStrings = [["integrated_blueprint", [integratedComponent.x, integratedComponent.y], signal, integratedComponent.integrationId]];
-        clonedStringNotResetting = true;
-        preconfiguredStructure = integratedComponent.flatten();
-        setWorkMode(WM_CLONE);
-      }
-      button.innerText = "사용하기";
-
-      td = document.createElement("td");
-      td.appendChild(button);
-      tr.appendChild(td);
-      button = document.createElement("button");
-      button.onclick = () => {
-        prepareNotificationAbstractDelete(name);
-        notificationPrompt().then(answer => {
-          if (answer === name) {
-            abstractComponentList.removeChild(tr);
-          }
-        });
-      }
-      button.innerText = "삭제하기";
-
-      td = document.createElement("td");
-      td.appendChild(button);
-      tr.appendChild(td);
-
-      abstractComponentList.appendChild(tr);
+      appendIntegratedComponentOnList(name, integratedComponent, integratedComponent.flatten(), integratedComponent.getSignal());
     });
   }
 }

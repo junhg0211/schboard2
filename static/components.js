@@ -388,15 +388,20 @@ function getConnectedWires(socket, componentList, wireList) {
   return result;
 }
 
-function getConnectedComponent(socket, componentList) {
+function getConnectedComponent(socket, componentList, getShallow, recursion) {
+  if (recursion === undefined) recursion = 0;
+  if (getShallow === undefined) getShallow = false;
+
   if (componentList === undefined) componentList = components;
 
   let component;
   for (let i = 0; i < componentList.length; i++) {
     component = componentList[i];
     if (component instanceof IntegratedComponent) {
-      let result = getConnectedComponent(socket, component.components);
-      if (result) return result;
+      let result = getConnectedComponent(socket, component.components, false, recursion+1);
+      if (result) {
+        return getShallow ? component : result;
+      }
     } else {
       if (component.inSockets.includes(socket) || component.outSockets.includes(socket)) {
         return component;
@@ -435,7 +440,7 @@ class NotComponent extends Component {
   }
 
   getSignal() {
-    return this.inSockets[0].on;
+    return this.inSockets[0].on ? 1 : 0;
   }
 
   flatten() {
@@ -460,7 +465,7 @@ class OrComponent extends Component {
   }
 
   getSignal() {
-    return [this.inSockets[0].on, this.inSockets[1].on];
+    return [this.inSockets[0].on ? 1 : 0, this.inSockets[1].on ? 1 : 0];
   }
 
   flatten() {
