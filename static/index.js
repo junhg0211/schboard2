@@ -132,6 +132,8 @@ function getTab(name) {
 }
 
 function createTab(name) {
+  if (getTab(name)) return;
+
   let tab = newTab(name);
   tabs.push(tab);
   let li = document.createElement("li");
@@ -183,8 +185,10 @@ function stringifyTab(tab, abstractComponentIds) {
     let fromSocket = wire.fromSocket;
     let toSocket = wire.toSocket;
 
-    let fromSocketComponent = getConnectedComponent(fromSocket, tab.components);
-    let toSocketComponent = getConnectedComponent(toSocket, tab.components);
+    let fromSocketComponent = getConnectedComponent(fromSocket, tab.components, true);
+    let toSocketComponent = getConnectedComponent(toSocket, tab.components, true);
+
+    console.log(fromSocketComponent, toSocketComponent);
 
     result.wireIndexes.push([
       tab.components.indexOf(fromSocketComponent),
@@ -217,9 +221,9 @@ function pack() {
     tabs: [],
     abstractedComponents: [],
     camera: {
-      x: camera.x,
-      y: camera.y,
-      zoom: camera.zoom,
+      x: camera.targetX,
+      y: camera.targetY,
+      zoom: camera.targetZoom,
     }
   };
 
@@ -263,6 +267,52 @@ function save() {
       document.body.removeChild(a);
       window.URL.revokeObjectURL(url);
   }, 0);
+}
+
+function load(projectJSON) {
+  camera.targetX = projectJSON.camera.x;
+  camera.targetY = projectJSON.camera.y;
+  camera.targetZoom = projectJSON.camera.zoom;
+
+  nextIntegrationId = projectJSON.nextIntegrationId;
+
+  let structures = [];
+  projectJSON.abstractedComponents.forEach(data => {
+    let [component, signal] = data;
+    preconfiguredStructure = component;
+    let componentStructured = structify(component, camera);
+    structures.push(component);
+    appendIntegratedComponentOnList(component[5], componentStructured, component, signal);
+  });
+
+  projectJSON.tabs.forEach(tab => {
+    createTab(tab.name);
+    changeTab(tab.name);
+
+    components.length = 0;
+    tab.components.forEach(component => {
+      let structified;
+      if (component[0] === "integrated_blueprint") {
+        structified = structify(component, camera, structures, 0);
+      } else {
+        structified = structify(component, camera);
+      }
+      components.push(structified);
+    });
+
+    tab.wireIndexes.forEach(indexes => {
+      let [fromCI, fromSI, toCI, toSI] = indexes;
+      // CI = component index
+      // SI = socket index
+      let fromComponent = components[fromCI], toComponent = components[toCI];
+      let fromSocket = fromComponent.outSockets[fromSI], toSocket = toComponent.inSockets[toSI];
+      connectWire(fromSocket, toSocket, camera);
+    });
+
+    tab.queuedComponentIndexes.forEach(index => componentCalculationQueue.push(components[index]));
+  });
+
+  changeTab(projectJSON.nowTab);
 }
 
 // settings
@@ -417,6 +467,39 @@ function getClosestSocket(boardX, boardY) {
   return closestSocket;
 }
 
+function connectWire(fromSocket, toSocket, camera) {
+  let wire = new Wire(fromSocket, toSocket, camera);
+
+  // check if wire is already existing,
+  // if so, delete it
+  let add = true;
+  wires.forEach(object => {
+    if (object.isSameWith(wire)) {
+      wires.splice(wires.indexOf(object), 1);
+      wire.toSocket.available = true;
+      wire.toSocket.changeState(false);
+      add = false;
+    }
+  });
+
+  // otherwise, add it
+  if (!add) return;
+
+  if (wire.toSocket.available) {
+    wire.toSocket.available = false;
+  } else {
+    // find a socket that already is connected to the toSocket
+    // and delete it
+    wires.forEach(object => {
+      if (object.toSocket === wire.toSocket) {
+        wires.splice(wires.indexOf(object), 1);
+      }
+    });
+  }
+  wires.push(wire);
+  wire.calculate();
+}
+
 let highlightedSocket = null;
 let startSocket = null;
 function tickWireMode() {
@@ -430,37 +513,7 @@ function tickWireMode() {
     }
 
     if (startSocket.role === Socket.OUTPUT && highlightedSocket.role === Socket.INPUT) {
-      let wire = new Wire(startSocket, highlightedSocket, camera);
-
-      // check if wire is already existing,
-      // if so, delete it
-      let add = true;
-      wires.forEach(object => {
-        if (object.isSameWith(wire)) {
-          wires.splice(wires.indexOf(object), 1);
-          wire.toSocket.available = true;
-          wire.toSocket.changeState(false);
-          add = false;
-        }
-      });
-      // otherwise, add it
-      if (add) {
-        if (wire.toSocket.available) {
-          wire.toSocket.available = false;
-        } else {
-          // find a socket that already is connected to the toSocket
-          // and delete it
-          wires.forEach(object => {
-            if (object.toSocket === wire.toSocket) {
-              wires.splice(wires.indexOf(object), 1);
-            }
-          });
-        }
-
-        // noinspection JSCheckFunctionSignatures
-        wires.push(wire);
-        wire.calculate();
-      }
+      connectWire(startSocket, highlightedSocket, camera);
     }
   }
 
@@ -864,6 +917,49 @@ function makeBlueprintString(integratedComponent, signal) {
   return ["integrated_blueprint", [integratedComponent.x, integratedComponent.y], signal, integratedComponent.integrationId];
 }
 
+function appendIntegratedComponentOnList(name, integratedComponent, flattenedComponent, signal) {
+  let tr = document.createElement("tr");
+
+  let td;
+
+  td = document.createElement("td");
+  td.innerHTML = `<p>${name}</p>`;
+  tr.appendChild(td)
+
+  let button;
+
+  button = document.createElement("button");
+  button.onclick = () => {
+    selectedObjects = [integratedComponent];
+    wireConnections = [];
+    clonedStrings = [makeBlueprintString(integratedComponent, signal)];
+    clonedStringNotResetting = true;
+    preconfiguredStructure = flattenedComponent;
+    setWorkMode(WM_CLONE);
+  }
+  button.innerText = "사용하기";
+
+  td = document.createElement("td");
+  td.appendChild(button);
+  tr.appendChild(td);
+  button = document.createElement("button");
+  button.onclick = () => {
+    prepareNotificationAbstractDelete(name);
+    notificationPrompt().then(answer => {
+      if (answer === name) {
+        abstractComponentList.removeChild(tr);
+      }
+    });
+  }
+  button.innerText = "삭제하기";
+
+  td = document.createElement("td");
+  td.appendChild(button);
+  tr.appendChild(td);
+
+  abstractComponentList.appendChild(tr);
+}
+
 const abstractComponentList = document.querySelector(".abstract-component");
 function abstract() {
   if (selectedObjects.length > 1) {
@@ -896,47 +992,7 @@ function abstract() {
 
       if (!notificationCheckbox1.checked) return;
 
-      let tr = document.createElement("tr");
-
-      let td;
-
-      td = document.createElement("td");
-      td.innerHTML = `<p>${name}</p>`;
-      tr.appendChild(td)
-
-      let button;
-
-      button = document.createElement("button");
-      let signal = integratedComponent.getSignal();
-      button.onclick = () => {
-        selectedObjects = [integratedComponent];
-        wireConnections = [];
-        clonedStrings = [makeBlueprintString(integratedComponent, signal)];
-        clonedStringNotResetting = true;
-        preconfiguredStructure = integratedComponent.flatten();
-        setWorkMode(WM_CLONE);
-      }
-      button.innerText = "사용하기";
-
-      td = document.createElement("td");
-      td.appendChild(button);
-      tr.appendChild(td);
-      button = document.createElement("button");
-      button.onclick = () => {
-        prepareNotificationAbstractDelete(name);
-        notificationPrompt().then(answer => {
-          if (answer === name) {
-            abstractComponentList.removeChild(tr);
-          }
-        });
-      }
-      button.innerText = "삭제하기";
-
-      td = document.createElement("td");
-      td.appendChild(button);
-      tr.appendChild(td);
-
-      abstractComponentList.appendChild(tr);
+      appendIntegratedComponentOnList(name, integratedComponent, integratedComponent.flatten(), integratedComponent.getSignal());
     });
   }
 }
