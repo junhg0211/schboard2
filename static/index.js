@@ -233,7 +233,9 @@ function pack() {
     // component = selectedObjects[0]
     // flattenedComponent = preconfiguredStructure
     // signal = clonedString[0][2]
-    result.abstractedComponents.push([preconfiguredStructure, clonedStrings[0][2]]);
+    let flattened = selectedObjects[0].flatten();
+    flattened[8] = [];
+    result.abstractedComponents.push([flattened, clonedStrings[0][2]]);
   }
 
   setWorkMode(workMode);
@@ -278,7 +280,7 @@ function load(projectJSON) {
   projectJSON.abstractedComponents.forEach(data => {
     let [component, signal] = data;
     preconfiguredStructure = component;
-    let componentStructured = structify(component, camera);
+    let componentStructured = structify(component, camera, structures, 0);
     structures.push(component);
     appendIntegratedComponentOnList(component[5], componentStructured, component, signal);
   });

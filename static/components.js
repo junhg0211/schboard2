@@ -440,7 +440,7 @@ class NotComponent extends Component {
   }
 
   getSignal() {
-    return this.inSockets[0].on;
+    return this.inSockets[0].on ? 1 : 0;
   }
 
   flatten() {
@@ -465,7 +465,7 @@ class OrComponent extends Component {
   }
 
   getSignal() {
-    return [this.inSockets[0].on, this.inSockets[1].on];
+    return [this.inSockets[0].on ? 1 : 0, this.inSockets[1].on ? 1 : 0];
   }
 
   flatten() {
