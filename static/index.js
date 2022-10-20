@@ -176,7 +176,7 @@ function abstract() {
 
       let [inSockets, outSockets] = getInOutSockets(abstractionComponents, abstractionWires);
       let integratedComponent = new IntegratedComponent(
-        avgX, avgY, name, camera, inSockets, outSockets, abstractionComponents, abstractionWires);
+        avgX, avgY, name, camera, inSockets, outSockets, lastDirection, abstractionComponents, abstractionWires);
       components.push(integratedComponent);
 
       let notificationCheckbox1 = document.querySelector("#notification-checkbox-1");

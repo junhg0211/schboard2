@@ -117,7 +117,7 @@ class Component {
   static DIRECTION_INDICATOR_COLOR = 'darkgrey';
   static TEXT_COLOR = 'black';
 
-  constructor(x, y, name, camera, inSockets, outSockets) {
+  constructor(x, y, name, camera, inSockets, outSockets, direction) {
     this.x = x;
     this.y = y;
     this.name = name;
@@ -126,7 +126,7 @@ class Component {
     this.inSockets = inSockets;
     this.outSockets = outSockets;
 
-    this.direction = lastDirection;
+    this.direction = direction === undefined ? lastDirection : direction;
     this.size = Component.SIDE_PADDING * 2;
 
     this.id = nextGameObjectId++;
@@ -411,8 +411,8 @@ function getConnectedComponent(socket, componentList, getShallow, recursion) {
 }
 
 class TrueComponent extends Component {
-  constructor(x, y, camera) {
-    super(x, y, "TRUE", camera, [], [new Socket(Socket.OUTPUT, camera)]);
+  constructor(x, y, camera, direction) {
+    super(x, y, "TRUE", camera, [], [new Socket(Socket.OUTPUT, camera)], direction);
 
     this.reposition();
     this.calculate();
@@ -423,13 +423,13 @@ class TrueComponent extends Component {
   }
 
   flatten() {
-    return ['true', [this.x, this.y]];
+    return ['true', [this.x, this.y], this.direction];
   }
 }
 
 class NotComponent extends Component {
-  constructor(x, y, camera) {
-    super(x, y, "NOT", camera, [new Socket(Socket.INPUT, camera)], [new Socket(Socket.OUTPUT, camera)]);
+  constructor(x, y, camera, direction) {
+    super(x, y, "NOT", camera, [new Socket(Socket.INPUT, camera)], [new Socket(Socket.OUTPUT, camera)], direction);
 
     this.reposition();
     this.calculate();
@@ -444,16 +444,17 @@ class NotComponent extends Component {
   }
 
   flatten() {
-    return ['not', [this.x, this.y], this.getSignal()];
+    return ['not', [this.x, this.y], this.getSignal(), this.direction];
   }
 }
 
 class OrComponent extends Component {
-  constructor(x, y, camera) {
+  constructor(x, y, camera, direction) {
     super(
-        x, y, "OR", camera,
-        [new Socket(Socket.INPUT, camera), new Socket(Socket.INPUT, camera)],
-        [new Socket(Socket.OUTPUT, camera)]
+      x, y, "OR", camera,
+      [new Socket(Socket.INPUT, camera), new Socket(Socket.INPUT, camera)],
+      [new Socket(Socket.OUTPUT, camera)],
+      direction
     );
 
     this.reposition();
@@ -469,13 +470,13 @@ class OrComponent extends Component {
   }
 
   flatten() {
-    return ['or', [this.x, this.y], this.getSignal()];
+    return ['or', [this.x, this.y], this.getSignal(), this.direction];
   }
 }
 
 class IntegratedComponent extends Component {
-  constructor(x, y, name, camera, inSockets, outSockets, components, wires) {
-    super(x, y, name, camera, inSockets, outSockets)
+  constructor(x, y, name, camera, inSockets, outSockets, direction, components, wires) {
+    super(x, y, name, camera, inSockets, outSockets, direction)
     this.components = components;
     this.wires = wires;
     this.delay = 0;
@@ -535,7 +536,7 @@ class IntegratedComponent extends Component {
           }
         });
 
-        usedComponents.push(["integrated_blueprint", [component.x, component.y], states, component.integrationId]);
+        usedComponents.push(makeBlueprintString(component, states));
 
         structures.push(...flatten[8]);
         flatten[8].length = 0;
@@ -584,7 +585,10 @@ class IntegratedComponent extends Component {
       }
     });
 
-    return ["integrated", [this.x, this.y], this.integrationId, usedComponents, wires, this.name, inSockets, outSockets, structures];
+    return [
+      "integrated", [this.x, this.y], this.integrationId, usedComponents, wires, this.name,
+      inSockets, outSockets, structures, this.direction
+    ];
   }
 }
 
@@ -598,25 +602,25 @@ function structify(flattened, camera, structures, recursion) {
 
   if (structures === undefined) structures = [];
   if (flattened[0] === "true") {
-    return new TrueComponent(flattened[1][0], flattened[1][1], camera);
+    return new TrueComponent(flattened[1][0], flattened[1][1], camera, flattened[2]);
   } else if (flattened[0] === "not") {
-    let result = new NotComponent(flattened[1][0], flattened[1][1], camera);
+    let result = new NotComponent(flattened[1][0], flattened[1][1], camera, flattened[3]);
     result.inSockets[0].on = flattened[2];
     result.calculate();
     return result;
   } else if (flattened[0] === "or") {
-    let result = new OrComponent(flattened[1][0], flattened[1][1], camera);
+    let result = new OrComponent(flattened[1][0], flattened[1][1], camera, flattened[3]);
     result.inSockets[0].on = flattened[2][0];
     result.inSockets[1].on = flattened[2][1];
     result.calculate();
     return result;
   } else if (flattened[0] === 'switch') {
-    let result = new SwitchComponent(flattened[1][0], flattened[1][1], camera);
+    let result = new SwitchComponent(flattened[1][0], flattened[1][1], camera, flattened[3]);
     result.outSockets[0].on = flattened[2];
     result.calculate();
     return result;
   } else if (flattened[0] === 'pushbutton') {
-    return new PushbuttonComponent(flattened[1][0], flattened[1][1], camera);
+    return new PushbuttonComponent(flattened[1][0], flattened[1][1], camera, flattened[2]);
   } else if (flattened[0] === "integrated") {
     let usedComponents = [];
     flattened[3].forEach(subcomponent => {
@@ -641,7 +645,7 @@ function structify(flattened, camera, structures, recursion) {
     });
 
     let result = new IntegratedComponent(
-      flattened[1][0], flattened[1][1], flattened[5], camera, inSockets, outSockets, usedComponents, usedWires);
+      flattened[1][0], flattened[1][1], flattened[5], camera, inSockets, outSockets, flattened[9], usedComponents, usedWires);
 
     result.integrationId = flattened[2];
     nextIntegrationId--;
@@ -653,6 +657,7 @@ function structify(flattened, camera, structures, recursion) {
       structure[3][i][2] = flattened[2][i];
     }
     structure[1] = flattened[1];
+    structure[9] = flattened[4];
     return structify(structure, camera, structures, recursion+1);
   }
 }
@@ -786,26 +791,26 @@ function getXYBySize(size) {
   ];
 }
 
-function makeBlueprintString(integratedComponent, signal) {
-  return ["integrated_blueprint", [integratedComponent.x, integratedComponent.y], signal, integratedComponent.integrationId];
+function makeBlueprintString(component, signal) {
+  return ["integrated_blueprint", [component.x, component.y], signal, component.integrationId, component.direction];
 }
 
 class SwitchComponent extends Component {
-  constructor(x, y, camera) {
-    super(x, y, "Switch", camera, [], [new Socket(Socket.OUTPUT, camera)])
+  constructor(x, y, camera, direction) {
+    super(x, y, "Switch", camera, [], [new Socket(Socket.OUTPUT, camera)], direction);
 
     this.reposition();
     this.calculate();
   }
 
   flatten() {
-    return ['switch', [this.x, this.y], this.outSockets[0].on];
+    return ['switch', [this.x, this.y], this.outSockets[0].on, this.direction];
   }
 }
 
 class PushbuttonComponent extends Component {
-  constructor(x, y, camera) {
-    super(x, y, "Pushbutton", camera, [], [new Socket(Socket.OUTPUT, camera)])
+  constructor(x, y, camera, direction) {
+    super(x, y, "Pushbutton", camera, [], [new Socket(Socket.OUTPUT, camera)], direction)
 
     this.reposition();
     this.calculate();
@@ -824,6 +829,6 @@ class PushbuttonComponent extends Component {
   }
 
   flatten() {
-    return ['pushbutton', [this.x, this.y]];
+    return ['pushbutton', [this.x, this.y], this.direction];
   }
 }
