@@ -197,6 +197,7 @@ function tickAbstraction() {
 let cpf = 0;  // calculations per frame
 let ccList = [];  // calculation components count
 let cccDelta = 0;
+let forceCalculationQueue = [];
 function tickCalculateComponents() {
   cpf = 0;
   if (cccDelta > FPS * 5) {
@@ -206,7 +207,12 @@ function tickCalculateComponents() {
   for (let i = 0; i < calculationLimit && componentCalculationQueue.length > 0; i++) {
     let component = componentCalculationQueue.shift();
     if (component) {
-      component.calculate();
+      let forceIndex = forceCalculationQueue.indexOf(component);
+      let forceCalculate = forceIndex !== -1;
+      component.calculate(forceCalculate);
+      if (forceCalculate) {
+        forceCalculationQueue.splice(forceIndex, 1);
+      }
       if (ccList.indexOf(component.id) === -1) {
         ccList.push(component.id);
       }

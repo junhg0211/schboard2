@@ -75,8 +75,8 @@ class Socket {
     this.onCount = 0;
   }
 
-  changeState(state) {
-    if (state === this.on) return;
+  changeState(state, forceCalculate) {
+    if (state === this.on && !forceCalculate) return;
 
     this.on = state;
     this.surface.color = state ? Socket.ON_COLOR : Socket.OFF_COLOR;
@@ -85,7 +85,7 @@ class Socket {
       getConnectedWires(this).forEach(wire => wire.calculate());
     } else {
       let connectedComponent = getConnectedComponent(this);
-      componentCalculationQueue.push(connectedComponent)
+      componentCalculationQueue.push(connectedComponent);
     }
 
     this.tickCount++;
@@ -260,7 +260,7 @@ class Component {
     this.outSockets.forEach(socket => socket.render());
   }
 
-  calculate() {}
+  calculate(forceCalculate) {}
 
   delete() {
     this.inSockets.forEach(socket => getConnectedWires(socket).forEach(wire => wire.delete()));
@@ -418,8 +418,8 @@ class TrueComponent extends Component {
     this.calculate();
   }
 
-  calculate() {
-    this.outSockets[0].changeState(true);
+  calculate(forceCalculate) {
+    this.outSockets[0].changeState(true, forceCalculate);
   }
 
   flatten() {
@@ -435,8 +435,8 @@ class NotComponent extends Component {
     this.calculate();
   }
 
-  calculate() {
-    this.outSockets[0].changeState(!this.inSockets[0].on);
+  calculate(forceCalculate) {
+    this.outSockets[0].changeState(!this.inSockets[0].on, forceCalculate);
   }
 
   getSignal() {
@@ -461,8 +461,8 @@ class OrComponent extends Component {
     this.calculate();
   }
 
-  calculate() {
-    this.outSockets[0].changeState(this.inSockets[0].on || this.inSockets[1].on);
+  calculate(forceCalculate) {
+    this.outSockets[0].changeState(this.inSockets[0].on || this.inSockets[1].on, forceCalculate);
   }
 
   getSignal() {
@@ -507,8 +507,8 @@ class IntegratedComponent extends Component {
     this.components.forEach(component => component.tick());
   }
 
-  calculate() {
-    this.inComponents.forEach(component => component.calculate());
+  calculate(forceCalculate) {
+    this.inComponents.forEach(component => component.calculate(forceCalculate));
   }
 
   getSignal() {
@@ -733,7 +733,7 @@ function getClosestSocket(boardX, boardY) {
   return closestSocket;
 }
 
-function connectWire(fromSocket, toSocket, camera) {
+function connectWire(fromSocket, toSocket, camera, calculateFlag) {
   let wire = new Wire(fromSocket, toSocket, camera);
 
   // check if wire is already existing,
@@ -763,7 +763,8 @@ function connectWire(fromSocket, toSocket, camera) {
     });
   }
   wires.push(wire);
-  wire.calculate();
+  if (calculateFlag === undefined || calculateFlag === true)
+    wire.calculate();
 }
 
 function getClosestComponent(x, y) {
