@@ -1,5 +1,5 @@
 /*
- * `objects.js` is for the basic objects that will be shown on the screen.
+ * `object.js` is for the basic objects that will be shown on the screen.
  */
 
 /*

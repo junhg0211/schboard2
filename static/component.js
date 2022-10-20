@@ -699,6 +699,97 @@ function getComponentsBorder(componentList) {
   return [x1, y1, x2, y2];
 }
 
+function getFloatingObject(inGameX, inGameY) {
+  for (let i = components.length - 1; i >= 0; i--) {
+    let object = components[i];
+    if (object.x <= inGameX && inGameX <= object.x + object.size
+      && object.y <= inGameY && inGameY <= object.y + object.size) {
+      return object;
+    }
+  }
+}
+
+function getClosestSocket(boardX, boardY) {
+  let closestDistance = Infinity;
+  let closestSocket = null;
+  function updateClosest(socket) {
+    let distance = Math.sqrt(Math.pow(socket.x - boardX, 2) + Math.pow(socket.y - boardY, 2));
+    if (distance < closestDistance) {
+      closestDistance = distance;
+      closestSocket = socket;
+    }
+  }
+
+  components.forEach(object => {
+    object.inSockets.forEach(updateClosest);
+    object.outSockets.forEach(updateClosest);
+  });
+
+  return closestSocket;
+}
+
+function connectWire(fromSocket, toSocket, camera) {
+  let wire = new Wire(fromSocket, toSocket, camera);
+
+  // check if wire is already existing,
+  // if so, delete it
+  let add = true;
+  wires.forEach(object => {
+    if (object.isSameWith(wire)) {
+      wires.splice(wires.indexOf(object), 1);
+      wire.toSocket.available = true;
+      wire.toSocket.changeState(false);
+      add = false;
+    }
+  });
+
+  // otherwise, add it
+  if (!add) return;
+
+  if (wire.toSocket.available) {
+    wire.toSocket.available = false;
+  } else {
+    // find a socket that already is connected to the toSocket
+    // and delete it
+    wires.forEach(object => {
+      if (object.toSocket === wire.toSocket) {
+        wires.splice(wires.indexOf(object), 1);
+      }
+    });
+  }
+  wires.push(wire);
+  wire.calculate();
+}
+
+function getClosestComponent(x, y) {
+  let closestDistance = Infinity;
+  let closestComponent = null;
+  function updateClosest(component) {
+    let dx = component.x + component.size / 2 - x;
+    let dy = component.y + component.size / 2 - y;
+    let distance = Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2));
+    if (distance <= closestDistance) {
+      closestDistance = distance;
+      closestComponent = component;
+    }
+  }
+  components.forEach(object => {
+    updateClosest(object);
+  });
+  return closestComponent;
+}
+
+function getXYBySize(size) {
+  return [
+    Math.round(camera.getBoardX(mouseX) - size/2),
+    Math.round(camera.getBoardY(mouseY) - size/2)
+  ];
+}
+
+function makeBlueprintString(integratedComponent, signal) {
+  return ["integrated_blueprint", [integratedComponent.x, integratedComponent.y], signal, integratedComponent.integrationId];
+}
+
 class SwitchComponent extends Component {
   constructor(x, y, camera) {
     super(x, y, "Switch", camera, [], [new Socket(Socket.OUTPUT, camera)])
