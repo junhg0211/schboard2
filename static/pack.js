@@ -68,7 +68,7 @@ function load(projectJSON) {
   let structures = [];
   projectJSON.abstractedComponents.forEach(data => {
     let [component, signal] = data;
-    preconfiguredStructure = [component];
+    preconfiguredStructures = [component];
     let componentStructured = structify(component, camera, structures, 0);
     structures.push(component);
     appendIntegratedComponentOnList(component[5], componentStructured, structures, signal);

@@ -289,7 +289,7 @@ let clonedStrings = [];
 let firstTickCloneMode = false, clonedStringNotResetting = false;
 let x1, x2, y1, y2, width, height;
 let wireConnections = [];
-let preconfiguredStructure = null;
+let preconfiguredStructures = null;
 function tickCloneMode() {
   if (firstTickCloneMode && !clonedStringNotResetting) {
     clonedStrings = [];

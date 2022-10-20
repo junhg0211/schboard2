@@ -597,7 +597,7 @@ function structify(flattened, camera, structures, recursion) {
   if (recursion === undefined) {
     recursion = 0;
     wireUpdates = [];
-    structures = preconfiguredStructure;
+    structures = preconfiguredStructures;
   }
 
   if (structures === undefined) structures = [];
