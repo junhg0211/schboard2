@@ -843,7 +843,7 @@ function getXYBySize(size) {
  */
 function tickComponentMakeDelete() {
   if (mouseX >= 0) {
-    if (isDown('Delete')) {
+    if (isDown('Delete') || isDown('Backspace')) {
       if (selectedObjects.length === 0) {
         let component = getClosestComponent(camera.getBoardX(mouseX), camera.getBoardY(mouseY));
         if (component !== null) {
