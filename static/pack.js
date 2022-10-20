@@ -68,10 +68,10 @@ function load(projectJSON) {
   let structures = [];
   projectJSON.abstractedComponents.forEach(data => {
     let [component, signal] = data;
-    preconfiguredStructure = component;
+    preconfiguredStructure = [component];
     let componentStructured = structify(component, camera, structures, 0);
     structures.push(component);
-    appendIntegratedComponentOnList(component[5], componentStructured, component, signal);
+    appendIntegratedComponentOnList(component[5], componentStructured, structures, signal);
   });
 
   projectJSON.tabs.forEach(tab => {
@@ -79,15 +79,7 @@ function load(projectJSON) {
     changeTab(tab.name);
 
     components.length = 0;
-    tab.components.forEach(component => {
-      let structified;
-      if (component[0] === "integrated_blueprint") {
-        structified = structify(component, camera, structures, 0);
-      } else {
-        structified = structify(component, camera);
-      }
-      components.push(structified);
-    });
+    tab.components.forEach(component => components.push(structify(component, camera, structures, 0)));
 
     tab.wireIndexes.forEach(indexes => {
       let [fromCI, fromSI, toCI, toSI] = indexes;

@@ -122,7 +122,10 @@ function appendIntegratedComponentOnList(name, integratedComponent, flattenedCom
     wireConnections = [];
     clonedStrings = [makeBlueprintString(integratedComponent, signal)];
     clonedStringNotResetting = true;
-    preconfiguredStructure = flattenedComponent;
+    if (flattenedComponent instanceof Array)
+      preconfiguredStructure = [...flattenedComponent];
+    else
+      preconfiguredStructure = [flattenedComponent];
     setWorkMode(WM_CLONE);
   }
   button.innerText = "사용하기";
