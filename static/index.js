@@ -205,7 +205,7 @@ function tickCalculateComponents() {
     cccDelta -= FPS * 5;
   }
   for (let i = 0; i < calculationLimit && componentCalculationQueue.length > 0; i++) {
-    let component = componentCalculationQueue.shift();
+    let component = componentCalculationQueue.shift(0);
     if (component) {
       let forceIndex = forceCalculationQueue.indexOf(component);
       let forceCalculate = forceIndex !== -1;
