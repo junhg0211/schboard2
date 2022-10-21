@@ -82,7 +82,10 @@ function pack() {
     // flattenedComponent = preconfiguredStructure
     // signal = clonedString[0][2]
     let flattened = selectedObjects[0].flatten();
-    flattened[8] = [];
+    flattened[8] = flattened[8].filter(
+      structure => result.abstractedComponents.map(abstracted => abstracted[0][2]).indexOf(structure[2]) === -1
+    );
+    console.log(flattened[8], result.abstractedComponents);
     result.abstractedComponents.push([flattened, clonedStrings[0][2]]);
   }
 
