@@ -678,7 +678,7 @@ function structify(flattened, camera, structures, recursion) {
   } else if (flattened[0] === 'pushbutton') {
     return new PushbuttonComponent(flattened[1][0], flattened[1][1], camera, flattened[2]);
   } else if (flattened[0] === 'led') {
-    return new LEDComponent(flattened[1][0], flattened[1][1], flattened[2], camera, flattened[3]);
+    return new LEDComponent(flattened[1][0], flattened[1][1], camera, flattened[2]);
   } else if (flattened[0] === "integrated") {
     let usedComponents = [];
     flattened[3].forEach(subcomponent => {
@@ -894,10 +894,10 @@ class PushbuttonComponent extends Component {
 
 class LEDComponent extends Component {
   static OFF_COLOR = Component.BACKGROUND_COLOR;
-  static ON_COLOR = 'red';
+  static ON_COLOR = '#444';
 
-  constructor(x, y, name, camera, direction) {
-    super(x, y, name, camera, [new Socket(Socket.INPUT, camera)], [], direction);
+  constructor(x, y, camera, direction) {
+    super(x, y, 'LED', camera, [new Socket(Socket.INPUT, camera)], [], direction);
 
     this.inSockets[0].changeStateEvents.push(state => this.surfaces[0].color = state ? LEDComponent.ON_COLOR : LEDComponent.OFF_COLOR);
 
@@ -910,6 +910,6 @@ class LEDComponent extends Component {
   }
 
   flatten() {
-    return ['led', [this.x, this.y], this.name, this.direction];
+    return ['led', [this.x, this.y], this.direction];
   }
 }
