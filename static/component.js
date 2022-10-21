@@ -628,6 +628,8 @@ function structify(flattened, camera, structures, recursion) {
     return result;
   } else if (flattened[0] === 'pushbutton') {
     return new PushbuttonComponent(flattened[1][0], flattened[1][1], camera, flattened[2]);
+  } else if (flattened[0] === 'led') {
+    return new LEDComponent(flattened[1][0], flattened[1][1], flattened[2], camera, flattened[3]);
   } else if (flattened[0] === "integrated") {
     let usedComponents = [];
     flattened[3].forEach(subcomponent => {
@@ -856,5 +858,9 @@ class LEDComponent extends Component {
   reposition() {
     super.reposition();
     this.surfaces[0].color = this.inSockets[0].on ? LEDComponent.ON_COLOR : LEDComponent.OFF_COLOR;
+  }
+
+  flatten() {
+    return ['led', [this.x, this.y], this.name, this.direction];
   }
 }
