@@ -135,11 +135,12 @@ class Component {
 
     this.id = nextGameObjectId++;
     this.surfaces = [];
+    this.texts = [];
 
     this.selected = false;
     this.delay = 1;
   }
-[0]
+
   setPos(x, y) {
     this.x = x;
     this.y = y;
@@ -212,7 +213,9 @@ class Component {
     this.surfaces = [
       new CameraRectangle(this.x, this.y, this.size, this.size, Component.BACKGROUND_COLOR, this.camera),
       new CameraRectangle(this.x, this.y, this.size, this.size, Component.DIRECTION_INDICATOR_COLOR, this.camera),
-      new CameraRectangleLine(this.x, this.y, this.size, this.size, Component.BORDER_COLOR, 0.3, this.camera),
+      new CameraRectangleLine(this.x, this.y, this.size, this.size, Component.BORDER_COLOR, 0.3, this.camera)
+    ];
+    this.texts = [
       new CameraText(this.x + this.size / 2, this.y + this.size / 2, this.name, Component.TEXT_COLOR, "Pretendard", 1, this.camera),
       new CameraText(this.x + 1, this.y + 1, this.id, Component.TEXT_COLOR, "Pretendard", 1, this.camera, "left", "top"),
       new CameraText(this.x + 1, this.y + this.size - 1, this.delay, Component.TEXT_COLOR, "Pretendard", 1, this.camera, "left", "bottom"),
@@ -245,6 +248,7 @@ class Component {
     this.surfaces.forEach(surface => surface.tick());
     this.inSockets.forEach(socket => socket.tick());
     this.outSockets.forEach(socket => socket.tick());
+    this.texts.forEach(surface => surface.tick());
 
     if (this.selected) {
       this.surfaces[2].color = Component.SELECTED_BORDER_COLOR;
@@ -253,18 +257,21 @@ class Component {
     }
   }
 
+  isInScreen() {
+    let size = this.surfaces[2].width * this.camera.zoom;
+    return this.x + this.size + size >= cameraLeft
+      && this.x - size <= cameraRight
+      && this.y + this.size + size >= cameraTop
+      && this.y - size <= cameraBottom;
+  }
+
   render() {
-    let radius = this.surfaces[2].width * this.camera.zoom;
-    if (
-      this.x + this.size + radius < cameraLeft
-      || this.x - radius > cameraRight
-      || this.y + this.size + radius < cameraTop
-      || this.y - radius > cameraBottom
-    ) return;
+    if (!this.isInScreen()) return;
 
     this.surfaces.forEach(surface => surface.render());
     this.inSockets.forEach(socket => socket.render());
     this.outSockets.forEach(socket => socket.render());
+    this.texts.forEach(surface => surface.render());
   }
 
   calculate(forceCalculate) {}
@@ -482,6 +489,8 @@ class OrComponent extends Component {
 }
 
 class IntegratedComponent extends Component {
+  static LED_PADDING = 1;
+
   constructor(x, y, name, camera, inSockets, outSockets, direction, components, wires) {
     super(x, y, name, camera, inSockets, outSockets, direction)
     this.components = components;
@@ -490,7 +499,7 @@ class IntegratedComponent extends Component {
     this.components.forEach(component => this.delay += component.delay);
 
     let socket, component;
-    this.inComponents = [];
+    this.inComponents = []; // components which have inSockets in it
     for (let i = 0; i < this.inSockets.length; i++) {
       socket = this.inSockets[i];
       for (let j = 0; j < this.components.length; j++) {
@@ -502,16 +511,54 @@ class IntegratedComponent extends Component {
       }
     }
 
+    this.ledComponents = this.components.filter(component => component instanceof LEDComponent);
+    this.ledSurfaces = [];
+
     this.integrationId = nextIntegrationId++;
 
     this.reposition();
     this.calculate();
   }
 
+  reposition() {
+    super.reposition();
+
+    let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+    this.ledComponents.forEach(component => {
+      minX = Math.min(component.x, minX);
+      maxX = Math.max(component.x + component.size, maxX);
+      minY = Math.min(component.y, minY);
+      maxY = Math.max(component.y + component.size, maxY);
+    });
+    let width = maxX - minX, height = maxY - minY;
+    let ratio = (this.size - 2*IntegratedComponent.PADDING) / Math.max(width, height);
+    let realWidth = width*ratio, realHeight = height*ratio;
+    let startX = this.x + (this.size - realWidth) / 2, startY = this.y + (this.size - realHeight) / 2;
+
+    this.ledSurfaces.length = 0;
+    this.ledComponents.forEach(component => {
+      component.surfaces[0].realX = startX + (component.x - minX) * ratio;
+      component.surfaces[0].realY = startY + (component.y - minY) * ratio;
+      component.surfaces[0].realWidth = component.size * ratio;
+      component.surfaces[0].realHeight = component.size * ratio;
+      this.ledSurfaces.push(component.surfaces[0]);
+    });
+  }
+
   tick() {
     super.tick();
 
     this.components.forEach(component => component.tick());
+  }
+
+  render() {
+    if (!this.isInScreen()) return;
+
+    this.surfaces.forEach(surface => surface.render());
+    this.ledSurfaces.forEach(surface => surface.render());
+    this.inSockets.forEach(socket => socket.render());
+    this.outSockets.forEach(socket => socket.render());
+    this.texts.forEach(surface => surface.render());
   }
 
   calculate(forceCalculate) {
