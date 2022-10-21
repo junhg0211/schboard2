@@ -892,7 +892,7 @@ class PushbuttonComponent extends Component {
 
 class LEDComponent extends Component {
   static OFF_COLOR = Component.BACKGROUND_COLOR;
-  static ON_COLOR = rgb2hex(Wire.ON_COLOR_RGB);
+  static ON_COLOR = 'red';
 
   constructor(x, y, name, camera, direction) {
     super(x, y, name, camera, [new Socket(Socket.INPUT, camera)], [], direction);
