@@ -285,7 +285,9 @@ class Component {
     components.splice(components.indexOf(this), 1);
   }
 
-  getSignal() {}
+  getSignal() {
+    return [];
+  }
 
   flatten() {}
 }
