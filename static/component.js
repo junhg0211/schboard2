@@ -23,6 +23,8 @@ class Socket {
 
     this.tickCount = 0;
     this.onCount = 0;
+
+    this.changeStateEvents = [];
   }
 
   setPos(x, y) {
@@ -88,6 +90,8 @@ class Socket {
       componentCalculationQueue.push(connectedComponent);
     }
 
+    this.changeStateEvents.forEach(event => event(this.on));
+
     this.tickCount++;
     if (this.on) this.onCount++;
   }
@@ -148,39 +152,7 @@ class Component {
     this.reposition();
   }
 
-  reposition() {
-    // calculate size according to the count of the sockets
-    this.size = getComponentSizeBySocketCount(Math.max(this.inSockets.length, this.outSockets.length));
-
-    // these surfaces are used to draw the background of the component
-    this.surfaces = [
-      new CameraRectangle(this.x, this.y, this.size, this.size, Component.BACKGROUND_COLOR, this.camera),
-      new CameraRectangle(this.x, this.y, this.size, this.size, Component.DIRECTION_INDICATOR_COLOR, this.camera),
-      new CameraRectangleLine(this.x, this.y, this.size, this.size, Component.BORDER_COLOR, 0.3, this.camera),
-      new CameraText(this.x + this.size / 2, this.y + this.size / 2, this.name, Component.TEXT_COLOR, "Pretendard", 1, this.camera),
-      new CameraText(this.x + 1, this.y + 1, this.id, Component.TEXT_COLOR, "Pretendard", 1, this.camera, "left", "top"),
-      new CameraText(this.x + 1, this.y + this.size - 1, this.delay, Component.TEXT_COLOR, "Pretendard", 1, this.camera, "left", "bottom"),
-    ];
-
-    if (this.direction === DIRECTION_UP) {
-      this.surfaces[1].realX = this.x;
-      this.surfaces[1].realY = this.y;
-      this.surfaces[1].realHeight = Component.PADDING;
-    } else if (this.direction === DIRECTION_LEFT) {
-      this.surfaces[1].realX = this.x;
-      this.surfaces[1].realY = this.y;
-      this.surfaces[1].realWidth = Component.PADDING;
-    } else if (this.direction === DIRECTION_DOWN) {
-      this.surfaces[1].realX = this.x;
-      this.surfaces[1].realY = this.y + this.size - Component.PADDING;
-      this.surfaces[1].realHeight = Component.PADDING;
-    } else if (this.direction === DIRECTION_RIGHT) {
-      this.surfaces[1].realX = this.x + this.size - Component.PADDING;
-      this.surfaces[1].realY = this.y;
-      this.surfaces[1].realWidth = Component.PADDING;
-    }
-
-    // socket placement
+  replaceSockets() {
     for (let i = 0; i < this.inSockets.length; i++) {
       let socket = this.inSockets[i];
       if (this.direction === DIRECTION_UP) {
@@ -230,6 +202,41 @@ class Component {
         );
       }
     }
+  }
+
+  reposition() {
+    // calculate size according to the count of the sockets
+    this.size = getComponentSizeBySocketCount(Math.max(this.inSockets.length, this.outSockets.length));
+
+    // these surfaces are used to draw the background of the component
+    this.surfaces = [
+      new CameraRectangle(this.x, this.y, this.size, this.size, Component.BACKGROUND_COLOR, this.camera),
+      new CameraRectangle(this.x, this.y, this.size, this.size, Component.DIRECTION_INDICATOR_COLOR, this.camera),
+      new CameraRectangleLine(this.x, this.y, this.size, this.size, Component.BORDER_COLOR, 0.3, this.camera),
+      new CameraText(this.x + this.size / 2, this.y + this.size / 2, this.name, Component.TEXT_COLOR, "Pretendard", 1, this.camera),
+      new CameraText(this.x + 1, this.y + 1, this.id, Component.TEXT_COLOR, "Pretendard", 1, this.camera, "left", "top"),
+      new CameraText(this.x + 1, this.y + this.size - 1, this.delay, Component.TEXT_COLOR, "Pretendard", 1, this.camera, "left", "bottom"),
+    ];
+
+    if (this.direction === DIRECTION_UP) {
+      this.surfaces[1].realX = this.x;
+      this.surfaces[1].realY = this.y;
+      this.surfaces[1].realHeight = Component.PADDING;
+    } else if (this.direction === DIRECTION_LEFT) {
+      this.surfaces[1].realX = this.x;
+      this.surfaces[1].realY = this.y;
+      this.surfaces[1].realWidth = Component.PADDING;
+    } else if (this.direction === DIRECTION_DOWN) {
+      this.surfaces[1].realX = this.x;
+      this.surfaces[1].realY = this.y + this.size - Component.PADDING;
+      this.surfaces[1].realHeight = Component.PADDING;
+    } else if (this.direction === DIRECTION_RIGHT) {
+      this.surfaces[1].realX = this.x + this.size - Component.PADDING;
+      this.surfaces[1].realY = this.y;
+      this.surfaces[1].realWidth = Component.PADDING;
+    }
+
+    this.replaceSockets();
 
     this.surfaces.forEach(surface => surface.tick());
   }
@@ -282,8 +289,8 @@ let componentCalculationQueue = null;
  * `Wire` is a connection between two `Socket`s.
  */
 class Wire {
-  static ON_COLOR = [0, 255, 0];
-  static OFF_COLOR = [127, 127, 127];
+  static ON_COLOR_RGB = [0, 255, 0];
+  static OFF_COLOR_RGB = [127, 127, 127];
   static WIDTH = 0.3;
 
   constructor(fromSocket, toSocket, camera) {
@@ -293,14 +300,14 @@ class Wire {
 
     this.on = this.fromSocket.on;
 
-    this.surface = new CameraLine(0, 0, 0, 10, Wire.OFF_COLOR, Wire.WIDTH, this.camera);
+    this.surface = new CameraLine(0, 0, 0, 10, Wire.OFF_COLOR_RGB, Wire.WIDTH, this.camera);
 
     this.tickCount = 0;
     this.onCount = 0;
   }
 
   setColorByFromSocket() {
-    this.surface.color = this.fromSocket.on ? Wire.ON_COLOR : Wire.OFF_COLOR;
+    this.surface.color = this.fromSocket.on ? Wire.ON_COLOR_RGB : Wire.OFF_COLOR_RGB;
   }
 
   isSameWith(another) {
@@ -331,11 +338,11 @@ class Wire {
       || lowerY - radius > cameraBottom
     ) return;
 
-    let r = Math.round(lerp(Wire.OFF_COLOR[0], Wire.ON_COLOR[0], this.onCount / this.tickCount))
+    let r = Math.round(lerp(Wire.OFF_COLOR_RGB[0], Wire.ON_COLOR_RGB[0], this.onCount / this.tickCount))
       .toString(16).padStart(2, '0');
-    let g = Math.round(lerp(Wire.OFF_COLOR[1], Wire.ON_COLOR[1], this.onCount / this.tickCount))
+    let g = Math.round(lerp(Wire.OFF_COLOR_RGB[1], Wire.ON_COLOR_RGB[1], this.onCount / this.tickCount))
       .toString(16).padStart(2, '0')
-    let b = Math.round(lerp(Wire.OFF_COLOR[2], Wire.ON_COLOR[2], this.onCount / this.tickCount))
+    let b = Math.round(lerp(Wire.OFF_COLOR_RGB[2], Wire.ON_COLOR_RGB[2], this.onCount / this.tickCount))
       .toString(16).padStart(2, '0');
     this.surface.color = `#${r}${g}${b}`;
     this.surface.render();
@@ -831,5 +838,23 @@ class PushbuttonComponent extends Component {
 
   flatten() {
     return ['pushbutton', [this.x, this.y], this.direction];
+  }
+}
+
+class LEDComponent extends Component {
+  static OFF_COLOR = Component.BACKGROUND_COLOR;
+  static ON_COLOR = rgb2hex(Wire.ON_COLOR_RGB);
+
+  constructor(x, y, name, camera, direction) {
+    super(x, y, name, camera, [new Socket(Socket.INPUT, camera)], [], direction);
+
+    this.inSockets[0].changeStateEvents.push(state => this.surfaces[0].color = state ? LEDComponent.ON_COLOR : LEDComponent.OFF_COLOR);
+
+    this.reposition();
+  }
+
+  reposition() {
+    super.reposition();
+    this.surfaces[0].color = this.inSockets[0].on ? LEDComponent.ON_COLOR : LEDComponent.OFF_COLOR;
   }
 }
