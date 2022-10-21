@@ -654,7 +654,7 @@ function structify(flattened, camera, structures, recursion) {
     structures = preconfiguredStructures;
   }
 
-  if (structures === undefined) structures = [];
+  if (structures === undefined || structures === null) structures = [];
   if (flattened[0] === "true") {
     return new TrueComponent(flattened[1][0], flattened[1][1], camera, flattened[2]);
   } else if (flattened[0] === "not") {
