@@ -57,6 +57,11 @@ function tickComponentMakeDelete() {
     } else if (isDown('b')) {
       let [x, y] = getXYBySize(getComponentSizeBySocketCount(1));
       components.push(new PushbuttonComponent(x, y, camera));
+    } else if (isDown('p')) {
+      let [x, y] = getXYBySize(getComponentSizeBySocketCount(1));
+      notificationPrompt().then(answer => {
+        components.push(new LEDComponent(x, y, answer, camera));
+      });
     }
   }
 }
