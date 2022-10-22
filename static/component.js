@@ -127,6 +127,9 @@ class Component {
     this.name = name;
     this.camera = camera;
 
+    this.targetX = x;
+    this.targetY = y;
+
     this.inSockets = inSockets;
     this.outSockets = outSockets;
 
@@ -142,9 +145,8 @@ class Component {
   }
 
   setPos(x, y) {
-    this.x = x;
-    this.y = y;
-    this.reposition();
+    this.targetX = x;
+    this.targetY = y;
   }
 
   rotateOnce() {
@@ -245,6 +247,17 @@ class Component {
   }
 
   tick() {
+    if (this.x !== this.targetX && this.y !== this.targetY) {
+      if (Math.abs(this.x - this.targetX) < 0.1 && Math.abs(this.y - this.targetY) < 0.1) {
+        this.x = this.targetX;
+        this.y = this.targetY;
+      } else {
+        this.x = lerp(this.x, this.targetX, Camera.movingInterpolation);
+        this.y = lerp(this.y, this.targetY, Camera.movingInterpolation);
+        this.reposition();
+      }
+    }
+
     this.surfaces.forEach(surface => surface.tick());
     this.inSockets.forEach(socket => socket.tick());
     this.outSockets.forEach(socket => socket.tick());
@@ -439,7 +452,7 @@ class TrueComponent extends Component {
   }
 
   flatten() {
-    return ['true', [this.x, this.y], this.direction];
+    return ['true', [this.targetX, this.targetY], this.direction];
   }
 }
 
@@ -456,11 +469,12 @@ class NotComponent extends Component {
   }
 
   getSignal() {
+    // noinspection JSValidateTypes
     return this.inSockets[0].on ? 1 : 0;
   }
 
   flatten() {
-    return ['not', [this.x, this.y], this.getSignal(), this.direction];
+    return ['not', [this.targetX, this.targetY], this.getSignal(), this.direction];
   }
 }
 
@@ -486,7 +500,7 @@ class OrComponent extends Component {
   }
 
   flatten() {
-    return ['or', [this.x, this.y], this.getSignal(), this.direction];
+    return ['or', [this.targetX, this.targetY], this.getSignal(), this.direction];
   }
 }
 
@@ -535,12 +549,12 @@ class IntegratedComponent extends Component {
     let width = maxX - minX, height = maxY - minY;
     let ratio = (this.size - 2*IntegratedComponent.PADDING) / Math.max(width, height);
     let realWidth = width*ratio, realHeight = height*ratio;
-    let startX = this.x + (this.size - realWidth) / 2, startY = this.y + (this.size - realHeight) / 2;
+    let startX = this.targetX + (this.size - realWidth) / 2, startY = this.targetY + (this.size - realHeight) / 2;
 
     this.ledSurfaces.length = 0;
     this.ledComponents.forEach(component => {
-      component.surfaces[0].realX = startX + (component.x - minX) * ratio;
-      component.surfaces[0].realY = startY + (component.y - minY) * ratio;
+      component.surfaces[0].realX = startX + (component.targetX - minX) * ratio;
+      component.surfaces[0].realY = startY + (component.targetY - minY) * ratio;
       component.surfaces[0].realWidth = component.size * ratio;
       component.surfaces[0].realHeight = component.size * ratio;
       this.ledSurfaces.push(component.surfaces[0]);
@@ -642,7 +656,7 @@ class IntegratedComponent extends Component {
     });
 
     return [
-      "integrated", [this.x, this.y], this.integrationId, usedComponents, wires, this.name,
+      "integrated", [this.targetX, this.targetY], this.integrationId, usedComponents, wires, this.name,
       inSockets, outSockets, structures, this.direction
     ];
   }
@@ -863,7 +877,7 @@ class SwitchComponent extends Component {
   }
 
   flatten() {
-    return ['switch', [this.x, this.y], this.outSockets[0].on, this.direction];
+    return ['switch', [this.targetX, this.targetY], this.outSockets[0].on, this.direction];
   }
 }
 
@@ -888,7 +902,7 @@ class PushbuttonComponent extends Component {
   }
 
   flatten() {
-    return ['pushbutton', [this.x, this.y], this.direction];
+    return ['pushbutton', [this.targetX, this.targetY], this.direction];
   }
 }
 
@@ -910,6 +924,6 @@ class LEDComponent extends Component {
   }
 
   flatten() {
-    return ['led', [this.x, this.y], this.direction];
+    return ['led', [this.targetX, this.targetY], this.direction];
   }
 }

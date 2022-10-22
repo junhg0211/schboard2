@@ -71,8 +71,8 @@ function tickArrangeMode() {
     if (floatingObject) {
       let x, y;
       selectedObjects.forEach(object => {
-        x = Math.round(object.x);
-        y = Math.round(object.y);
+        x = Math.round(object.targetX);
+        y = Math.round(object.targetY);
         object.setPos(x, y);
       });
     }
