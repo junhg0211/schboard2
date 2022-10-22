@@ -868,7 +868,7 @@ function getXYBySize(size) {
 }
 
 function makeBlueprintString(component, signal) {
-  return ["integrated_blueprint", [component.x, component.y], signal, component.integrationId, component.direction];
+  return ["integrated_blueprint", [component.targetX, component.targetY], signal, component.integrationId, component.direction];
 }
 
 class SwitchComponent extends Component {

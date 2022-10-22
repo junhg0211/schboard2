@@ -218,17 +218,19 @@ function tickUnabstractionMode() {
       floatingComponent.components.forEach(component => {
         components.push(component);
 
-        deltaX += component.x;
-        deltaY += component.y;
+        deltaX += component.targetX;
+        deltaY += component.targetY;
       });
       wires.push(...floatingComponent.wires);
 
-      deltaX = floatingComponent.x - Math.round(deltaX / floatingComponent.components.length);
-      deltaY = floatingComponent.y - Math.round(deltaY / floatingComponent.components.length);
+      deltaX = floatingComponent.targetX - Math.round(deltaX / floatingComponent.components.length);
+      deltaY = floatingComponent.targetY - Math.round(deltaY / floatingComponent.components.length);
 
       floatingComponent.components.forEach(component => {
-        component.x += deltaX;
-        component.y += deltaY;
+        component.x = floatingComponent.x + floatingComponent.size / 2;
+        component.y = floatingComponent.y + floatingComponent.size / 2;
+        component.targetX += deltaX;
+        component.targetY += deltaY;
         component.reposition();
       });
     }
@@ -337,8 +339,9 @@ function tickCloneMode() {
       let clonedComponents = [];
       clonedStrings.forEach(strings => {
         let component = structify(strings, camera);
-        component.x = component.x - x1 - halfWidth + inGameX;
-        component.y = component.y - y1 - halfHeight + inGameY;
+        component.setPos(component.targetX - x1 - halfWidth + inGameX, component.targetY - y1 - halfHeight + inGameY);
+        component.x = component.targetX;
+        component.y = component.targetY;
         component.reposition();
         component.calculate();
         clonedComponents.push(component);
