@@ -284,7 +284,7 @@ class Component {
     this.surfaces.forEach(surface => surface.render());
     this.inSockets.forEach(socket => socket.render());
     this.outSockets.forEach(socket => socket.render());
-    this.texts.forEach(surface => surface.render());
+    if (!hideMode) this.texts.forEach(surface => surface.render());
   }
 
   calculate(forceCalculate) {}
@@ -348,6 +348,8 @@ class Wire {
   }
 
   render() {
+    if (hideMode) return;
+
     let radius = this.camera.zoom * Wire.WIDTH ;
     let lefterX = this.surface.realX, righterX = this.surface.realX2;
     let higherY = this.surface.realY, lowerY = this.surface.realY2;

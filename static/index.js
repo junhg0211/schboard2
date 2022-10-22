@@ -239,6 +239,13 @@ function tickCalculateComponents() {
   }
 }
 
+let hideMode = false;
+function tickHide() {
+  if (isDown('g')) {
+    hideMode = !hideMode;
+  }
+}
+
 // game logic
 function tick() {
   tickCalculateComponents();
@@ -252,6 +259,7 @@ function tick() {
     tickComponentMakeDelete();
     tickInfoTable();
     tickAbstraction();
+    tickHide();
 
     // camera world screen left, right, top and bottom for optimizing component.js and wire render
     cameraLeft = camera.getBoardX(0);
