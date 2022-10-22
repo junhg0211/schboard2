@@ -247,15 +247,16 @@ class Component {
   }
 
   tick() {
-    if (this.x !== this.targetX && this.y !== this.targetY) {
-      if (Math.abs(this.x - this.targetX) < 0.1 && Math.abs(this.y - this.targetY) < 0.1) {
+    if (Math.abs(this.x - this.targetX) < 0.1 && Math.abs(this.y - this.targetY) < 0.1) {
+      if (this.x !== this.targetX || this.y !== this.targetY) {
         this.x = this.targetX;
         this.y = this.targetY;
-      } else {
-        this.x = lerp(this.x, this.targetX, Camera.movingInterpolation);
-        this.y = lerp(this.y, this.targetY, Camera.movingInterpolation);
         this.reposition();
       }
+    } else {
+      this.x = lerp(this.x, this.targetX, Camera.movingInterpolation);
+      this.y = lerp(this.y, this.targetY, Camera.movingInterpolation);
+      this.reposition();
     }
 
     this.surfaces.forEach(surface => surface.tick());
