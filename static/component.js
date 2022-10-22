@@ -552,12 +552,12 @@ class IntegratedComponent extends Component {
     let width = maxX - minX, height = maxY - minY;
     let ratio = (this.size - 2*IntegratedComponent.PADDING) / Math.max(width, height);
     let realWidth = width*ratio, realHeight = height*ratio;
-    let startX = this.targetX + (this.size - realWidth) / 2, startY = this.targetY + (this.size - realHeight) / 2;
+    let startX = this.x + (this.size - realWidth) / 2, startY = this.y + (this.size - realHeight) / 2;
 
     this.ledSurfaces.length = 0;
     this.ledComponents.forEach(component => {
-      component.surfaces[0].realX = startX + (component.targetX - minX) * ratio;
-      component.surfaces[0].realY = startY + (component.targetY - minY) * ratio;
+      component.surfaces[0].realX = startX + (component.x - minX) * ratio;
+      component.surfaces[0].realY = startY + (component.y - minY) * ratio;
       component.surfaces[0].realWidth = component.size * ratio;
       component.surfaces[0].realHeight = component.size * ratio;
       this.ledSurfaces.push(component.surfaces[0]);
