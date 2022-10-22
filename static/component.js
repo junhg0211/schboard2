@@ -577,7 +577,7 @@ class IntegratedComponent extends Component {
     this.ledSurfaces.forEach(surface => surface.render());
     this.inSockets.forEach(socket => socket.render());
     this.outSockets.forEach(socket => socket.render());
-    this.texts.forEach(surface => surface.render());
+    if (!hideMode) this.texts.forEach(surface => surface.render());
   }
 
   calculate(forceCalculate) {
