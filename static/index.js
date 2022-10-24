@@ -8,6 +8,7 @@ let nextGameObjectId = 0;
 let nextIntegrationId = 0;
 let lastDirection = 0;
 let minimalSatisfaction = 1, maximalSatisfaction = 2;
+let maximalCallim = 1000;
 
 function tickComponentRotation() {
   if (isDown('r')) {
@@ -237,6 +238,10 @@ function tickCalculateComponents() {
       calculationLimitInput.value = calculationLimit;
     }
   }
+  if (calculationLimit > maximalCallim) {
+    calculationLimit = maximalCallim;
+    calculationLimitInput.value = maximalCallim;
+  }
 }
 
 let hideMode = false;
@@ -339,6 +344,12 @@ maximalSatisfactionInput.addEventListener("change", event => {
   maximalSatisfaction = event.target.value;
 })
 maximalSatisfactionInput.value = maximalSatisfaction
+
+const maximalCallimInput = document.querySelector("#maximal-callim");
+maximalCallimInput.addEventListener("change", event => {
+  maximalCallim = event.target.value;
+})
+maximalCallimInput.value = maximalCallim;
 
 // main loop
 window.addEventListener("load", () => {
