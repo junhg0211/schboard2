@@ -3,7 +3,7 @@
  */
 
 // settings
-let calculationLimit = 2;
+let calculationLimit = 1;
 let nextGameObjectId = 0;
 let nextIntegrationId = 0;
 let lastDirection = 0;
