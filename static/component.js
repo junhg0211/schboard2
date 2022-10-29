@@ -47,7 +47,7 @@ class Socket {
   }
 
   tick() {
-    this.setHighlight(this === highlightedSocket || this === startSocket);
+    this.setHighlight(highlightedSockets.includes(this));
     this.surface.tick();
 
     this.tickCount++;

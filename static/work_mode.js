@@ -139,32 +139,70 @@ function tickArrangeMode() {
   }
 }
 
-let highlightedSocket = null;
-let startSocket = null;
+function needSwap() {
+  return highlightedSockets[0].role === Socket.INPUT && highlightedSockets[1].role === Socket.OUTPUT;
+}
+
+function packetProcess(connectFlag) {
+  highlightedSockets.length = 2;
+  let outSocket = highlightedSockets[0];
+  let inSocket = highlightedSockets[1];
+  if (needSwap()) {
+    let tmp = outSocket;
+    outSocket = inSocket;
+    inSocket = tmp;
+  }
+
+  if (inSocket.role !== Socket.INPUT) return;
+
+  let outSockets = getConnectedComponent(outSocket, components, true).outSockets,
+      outSocketIndex = outSockets.indexOf(outSocket);
+  let inSockets = getConnectedComponent(inSocket, components, true).inSockets,
+      inSocketIndex = inSockets.indexOf(inSocket);
+  let maxI = Math.min(wirePacket, outSockets.length - outSocketIndex, inSockets.length - inSocketIndex);
+  for (let i = 0; i < maxI; i++) {
+    if (connectFlag) {
+      connectWire(outSockets[outSocketIndex + i], inSockets[inSocketIndex + i], camera);
+    } else {
+      highlightedSockets.push(outSockets[outSocketIndex + i]);
+      highlightedSockets.push(inSockets[inSocketIndex + i]);
+    }
+  }
+}
+
+let wirePacket = 1;  // count of wires that will made by a single connection. default 1
+let highlightedSockets = [null, null];
 function tickWireMode() {
-  // if mouseUp
-  if (startSocket !== null && highlightedSocket !== null && isMouseUp(0) && startSocket !== highlightedSocket) {
+  // if mouseUp, connection
+  if (highlightedSockets[0] !== null && highlightedSockets[1] !== null
+      && isMouseUp(0) && highlightedSockets[0] !== highlightedSockets[1]) {
     // swap INPUT -> OUTPUT to OUTPUT -> INPUT
-    if (startSocket.role === Socket.INPUT && highlightedSocket.role === Socket.OUTPUT) {
-      let temp = startSocket;
-      startSocket = highlightedSocket;
-      highlightedSocket = temp;
+    if (needSwap()) {
+      [highlightedSockets[0], highlightedSockets[1]] = [highlightedSockets[1], highlightedSockets[0]];
     }
 
-    if (startSocket.role === Socket.OUTPUT && highlightedSocket.role === Socket.INPUT) {
-      connectWire(startSocket, highlightedSocket, camera);
+    if (highlightedSockets[0].role === Socket.OUTPUT && highlightedSockets[1].role === Socket.INPUT) {
+      packetProcess(true);
     }
   }
 
   // click socket highlighting
   if (isClicked(0)) {
-    highlightedSocket = getClosestSocket(camera.getBoardX(mouseX), camera.getBoardY(mouseY));
+    highlightedSockets[1] = getClosestSocket(camera.getBoardX(mouseX), camera.getBoardY(mouseY));
     if (isMouseDown(0)) {
-      startSocket = highlightedSocket;
+      highlightedSockets[0] = highlightedSockets[1];
+      wirePacket = 1;
     }
+
+    packetProcess()
   } else if (isMouseUp(0)) {
-    highlightedSocket = null;
-    startSocket = null;
+    highlightedSockets = [null, null];
+  }
+
+  if (isDown('S')) {
+    wirePacket++;
+  } else if (isDown('W')) {
+    wirePacket = Math.max(wirePacket - 1, 1);
   }
 }
 
