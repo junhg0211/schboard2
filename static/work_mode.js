@@ -143,7 +143,7 @@ function needSwap() {
   return highlightedSockets[0].role === Socket.INPUT && highlightedSockets[1].role === Socket.OUTPUT;
 }
 
-function packetProcess(connectFlag) {
+function packetProcess() {
   highlightedSockets.length = 2;
   let outSocket = highlightedSockets[0];
   let inSocket = highlightedSockets[1];
@@ -160,13 +160,22 @@ function packetProcess(connectFlag) {
   let inSockets = getConnectedComponent(inSocket, components, true).inSockets,
       inSocketIndex = inSockets.indexOf(inSocket);
   let maxI = Math.min(wirePacket, outSockets.length - outSocketIndex, inSockets.length - inSocketIndex);
+
+  return [outSockets, outSocketIndex, inSockets, inSocketIndex, maxI];
+}
+
+function packetConnect() {
+  let [outSockets, outSocketIndex, inSockets, inSocketIndex, maxI] = packetProcess();
   for (let i = 0; i < maxI; i++) {
-    if (connectFlag) {
-      connectWire(outSockets[outSocketIndex + i], inSockets[inSocketIndex + i], camera);
-    } else {
-      highlightedSockets.push(outSockets[outSocketIndex + i]);
-      highlightedSockets.push(inSockets[inSocketIndex + i]);
-    }
+    connectWire(outSockets[outSocketIndex + i], inSockets[inSocketIndex + i], camera);
+  }
+}
+
+function packetHighlight() {
+  let [outSockets, outSocketIndex, inSockets, inSocketIndex, maxI] = packetProcess();
+  for (let i = 0; i < maxI; i++) {
+    highlightedSockets.push(outSockets[outSocketIndex + i]);
+    highlightedSockets.push(inSockets[inSocketIndex + i]);
   }
 }
 
@@ -182,7 +191,7 @@ function tickWireMode() {
     }
 
     if (highlightedSockets[0].role === Socket.OUTPUT && highlightedSockets[1].role === Socket.INPUT) {
-      packetProcess(true);
+      packetConnect();
     }
   }
 
@@ -194,7 +203,7 @@ function tickWireMode() {
       wirePacket = 1;
     }
 
-    packetProcess()
+    packetHighlight();
   } else if (isMouseUp(0)) {
     highlightedSockets = [null, null];
   }
