@@ -351,16 +351,15 @@ class Wire {
   render() {
     if (hideMode) return;
 
-    let radius = this.camera.zoom * Wire.WIDTH ;
-    let lefterX = this.surface.realX, righterX = this.surface.realX2;
-    let higherY = this.surface.realY, lowerY = this.surface.realY2;
-    if (lefterX > righterX) [lefterX, righterX] = [righterX, lefterX];
-    if (higherY > lowerY) [higherY, lowerY] = [lowerY, higherY]
+    let x1 = this.surface.realX, x2 = this.surface.realX2;
+    let y1 = this.surface.realY, y2 = this.surface.realY2;
+    [x1, x2] = [Math.min(x1, x2), Math.max(x1, x2)];
+    [y1, y2] = [Math.min(y1, y2), Math.max(y1, y2)];
     if (
-      lefterX - radius > cameraRight
-      || righterX + radius < cameraLeft
-      || higherY + radius < cameraTop
-      || lowerY - radius > cameraBottom
+        x2 < cameraLeft
+        || x1 > cameraRight
+        || y2 < cameraTop
+        || y1 > cameraBottom
     ) return;
 
     let r = Math.round(lerp(Wire.OFF_COLOR_RGB[0], Wire.ON_COLOR_RGB[0], this.onCount / this.tickCount))
