@@ -157,39 +157,40 @@ function appendIntegratedComponentOnList(name, integratedComponent, flattenedCom
 
 const abstractComponentList = document.querySelector(".abstract-component");
 function abstract() {
-  if (selectedObjects.length > 1) {
-    prepareNotificationAbstraction();
-    notificationPrompt().then(name => {
-      if (!name) return;
+  if (selectedObjects.length <= 1)
+    return;
 
-      let abstractionComponents = [...selectedObjects];
-      let abstractionWires = getIntersectWires(wires, abstractionComponents);
+  prepareNotificationAbstraction();
+  notificationPrompt().then(name => {
+    if (!name) return;
 
-      let avgX = 0, avgY = 0;
+    let abstractionComponents = [...selectedObjects];
+    let abstractionWires = getIntersectWires(wires, abstractionComponents);
 
-      abstractionComponents.forEach(component => {
-        components.splice(components.indexOf(component), 1)
-        avgX += component.x;
-        avgY += component.y;
-      });
-      avgX = Math.round(avgX / abstractionComponents.length);
-      avgY = Math.round(avgY / abstractionComponents.length);
+    let avgX = 0, avgY = 0;
 
-      abstractionWires.forEach(wire => wires.splice(wires.indexOf(wire), 1));
-      // remove selected wires from the tab
-
-      let [inSockets, outSockets] = getInOutSockets(abstractionComponents, abstractionWires);
-      let integratedComponent = new IntegratedComponent(
-        avgX, avgY, name, camera, inSockets, outSockets, lastDirection, abstractionComponents, abstractionWires);
-      components.push(integratedComponent);
-
-      let notificationCheckbox1 = document.querySelector("#notification-checkbox-1");
-
-      if (!notificationCheckbox1.checked) return;
-
-      appendIntegratedComponentOnList(name, integratedComponent, integratedComponent.flatten(), integratedComponent.getSignal());
+    abstractionComponents.forEach(component => {
+      components.splice(components.indexOf(component), 1)
+      avgX += component.x;
+      avgY += component.y;
     });
-  }
+    avgX = Math.round(avgX / abstractionComponents.length);
+    avgY = Math.round(avgY / abstractionComponents.length);
+
+    abstractionWires.forEach(wire => wires.splice(wires.indexOf(wire), 1));
+    // remove selected wires from the tab
+
+    let [inSockets, outSockets] = getInOutSockets(abstractionComponents, abstractionWires);
+    let integratedComponent = new IntegratedComponent(
+      avgX, avgY, name, camera, inSockets, outSockets, lastDirection, abstractionComponents, abstractionWires);
+    components.push(integratedComponent);
+
+    let notificationCheckbox1 = document.querySelector("#notification-checkbox-1");
+
+    if (!notificationCheckbox1.checked) return;
+
+    appendIntegratedComponentOnList(name, integratedComponent, integratedComponent.flatten(), integratedComponent.getSignal());
+  });
 }
 
 function tickAbstraction() {
