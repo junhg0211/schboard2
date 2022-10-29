@@ -96,6 +96,10 @@ const infoSatisfactionRate = document.querySelector("#info-satisfaction-rate");
 const infoComponents = document.querySelector("#info-components");
 const infoWires = document.querySelector("#info-wires");
 const infoSelectedComponents = document.querySelector("#info-selected-components");
+const infoFPS = document.querySelector("#info-fps");
+let lastFPSUpdated = Math.floor(Date.now() / 1000);
+let fpsCalculated = 0;
+let fpsCalculating = 0;
 function tickInfoTable() {
   infoCameraX.innerText = Math.round(camera.x * 1000) / 1000;
   infoCameraY.innerText = Math.round(camera.y * 1000) / 1000;
@@ -107,6 +111,14 @@ function tickInfoTable() {
   infoComponents.innerText = components.length;
   infoWires.innerText = wires.length;
   infoSelectedComponents.innerText = selectedObjects.length;
+  infoFPS.innerText = fpsCalculated;
+
+  fpsCalculating++;
+  if (Math.floor(Date.now() / 1000) !== lastFPSUpdated) {
+    lastFPSUpdated = Math.floor(Date.now() / 1000);
+    fpsCalculated = fpsCalculating;
+    fpsCalculating = 0;
+  }
 }
 
 function appendIntegratedComponentOnList(name, integratedComponent, flattenedComponent, signal) {
