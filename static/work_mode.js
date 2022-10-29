@@ -26,9 +26,13 @@ let startingCameraX, startingCameraY;  // camera position when mouse down in cam
 let mouseAnchorX, mouseAnchorY;  // mouse position when mouse down in screen world
 let selectedObjects = [];
 let selectedObjectPositions = [];
+let shiftSelecting = false;  // whether the selecting session is envoked with shift key
+let selectedUpdates = [];  // list of components which are updated in shift-selecting mode
 function tickArrangeMode() {
   let inGameX = camera.getBoardX(mouseX), inGameY = camera.getBoardY(mouseY);
   if (isMouseDown(0)) {
+    shiftSelecting = isPressed('Shift');
+
     floatingObject = getFloatingObject(inGameX, inGameY);
 
     if (floatingObject !== null && floatingObject !== undefined) {
@@ -76,6 +80,8 @@ function tickArrangeMode() {
         object.setPos(x, y);
       });
     }
+
+    selectedUpdates.length = 0;
   }
 
   if (isClicked(0)) {
@@ -99,15 +105,34 @@ function tickArrangeMode() {
       let selectingBoxCameraWidth = selectingBox.width / camera.zoom;
       let selectingBoxCameraHeight = selectingBox.height / camera.zoom;
 
+      function checkSelectingBox(component) {
+        return rectangleCollision(
+              component.x, component.y, component.size, component.size,
+              selectingBoxCameraX, selectingBoxCameraY, selectingBoxCameraWidth, selectingBoxCameraHeight);
+      }
+
       selectedObjects.length = 0;
       components.forEach(component => {
-        component.selected = rectangleCollision(
-          component.x, component.y, component.size, component.size,
-          selectingBoxCameraX, selectingBoxCameraY, selectingBoxCameraWidth, selectingBoxCameraHeight);
-        if (component.selected) {
-          selectedObjects.push(component);
+        if (shiftSelecting) {
+          // check if rectangle is in the selecting box
+          if (checkSelectingBox(component) && selectedUpdates.indexOf(component) === -1) {
+            component.selected = !component.selected;
+            selectedUpdates.push(component);
+          }
+        } else {
+          component.selected = checkSelectingBox(component);
         }
+        if (component.selected) selectedObjects.push(component);
       });
+
+      if (shiftSelecting) {
+        selectedUpdates.forEach(component => {
+          if (!checkSelectingBox(component)) {
+            selectedUpdates.splice(selectedUpdates.indexOf(component), 1);
+            component.selected = !component.selected;
+          }
+        });
+      }
 
       selectingBox.tick();
     }
