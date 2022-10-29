@@ -318,7 +318,6 @@ function init() {
 function resize() {
   canvas.width = window.innerWidth - 300;
   canvas.height = window.innerHeight;
-  console.log(canvas.width, canvas.height);
 }
 window.addEventListener("resize", resize);
 
