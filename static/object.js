@@ -191,6 +191,8 @@ class Camera {
  * A `Line` object that works on the Camera world.
  */
 class CameraLine extends Line {
+  static MAX_WIDTH = 1;
+
   constructor(x, y, x2, y2, color, lineWidth, camera) {
     super(x, y, x2, y2, color, lineWidth);
     this.camera = camera;
@@ -202,12 +204,17 @@ class CameraLine extends Line {
     this.realWidth = lineWidth;
   }
 
+  calculateWidth() {
+    let x = this.realWidth * this.camera.zoom;
+    return CameraLine.MAX_WIDTH * (-Math.exp(-x / CameraLine.MAX_WIDTH) + 1)
+  }
+
   tick() {
     this.x = this.camera.getScreenX(this.realX);
     this.y = this.camera.getScreenY(this.realY);
     this.x2 = this.camera.getScreenX(this.realX2);
     this.y2 = this.camera.getScreenY(this.realY2);
-    this.lineWidth = this.realWidth * this.camera.zoom;
+    this.lineWidth = this.calculateWidth();
   }
 }
 
