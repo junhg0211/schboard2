@@ -172,7 +172,11 @@ function packetConnect() {
 }
 
 function packetHighlight() {
-  let [outSockets, outSocketIndex, inSockets, inSocketIndex, maxI] = packetProcess();
+  let packetProcessed = packetProcess();
+
+  if (packetProcessed === undefined) return;
+
+  let [outSockets, outSocketIndex, inSockets, inSocketIndex, maxI] = packetProcessed;
   for (let i = 0; i < maxI; i++) {
     highlightedSockets.push(outSockets[outSocketIndex + i]);
     highlightedSockets.push(inSockets[inSocketIndex + i]);
