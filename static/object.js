@@ -130,6 +130,8 @@ class Camera {
   static LEFT_KEY = 'a';
   static RIGHT_KEY = 'd';
   static movingInterpolation = 0.15;
+  static MINIMAL_ZOOM = 1;
+  static MAXIMAL_ZOOM = 200;
 
   constructor(x, y, zoom) {
     this.x = x;
@@ -163,7 +165,7 @@ class Camera {
       mouseScroll = 0;
     }
 
-    this.targetZoom = limit(this.targetZoom, 1, 200)
+    this.targetZoom = limit(this.targetZoom, Camera.MINIMAL_ZOOM, Camera.MAXIMAL_ZOOM);
 
     this.x = lerp(this.x, this.targetX, Camera.movingInterpolation);
     this.y = lerp(this.y, this.targetY, Camera.movingInterpolation);
