@@ -167,7 +167,7 @@ class Camera {
 
     this.x = lerp(this.x, this.targetX, Camera.movingInterpolation);
     this.y = lerp(this.y, this.targetY, Camera.movingInterpolation);
-    this.zoom = lerp(this.zoom, this.targetZoom, Camera.movingInterpolation);
+    this.zoom = Math.exp(lerp(Math.log(this.zoom), Math.log(this.targetZoom), Camera.movingInterpolation));
   }
 
   getScreenX(x) {
