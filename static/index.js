@@ -109,6 +109,7 @@ let lastFPSUpdated = Math.floor(Date.now() / 1000);
 let fpsCalculated = 0;
 let fpsCalculating = 0;
 const infoTotalCost= document.querySelector("#info-total-cost");
+const infoSelectedCost= document.querySelector("#info-selected-cost");
 function tickInfoTable() {
   infoCameraX.innerText = Math.round(camera.x * 1000) / 1000;
   infoCameraY.innerText = Math.round(camera.y * 1000) / 1000;
@@ -122,6 +123,7 @@ function tickInfoTable() {
   infoSelectedComponents.innerText = selectedObjects.length;
   infoFPS.innerText = fpsCalculated;
   infoTotalCost.innerText = sumCost(components);
+  infoSelectedCost.innerText = sumCost(selectedObjects);
 
   fpsCalculating++;
   if (Math.floor(Date.now() / 1000) !== lastFPSUpdated) {
