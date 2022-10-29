@@ -86,6 +86,14 @@ function tickSpaceDrag() {
   }
 }
 
+function sumCost(componentList) {
+  let sum = 0;
+  componentList.forEach(component => {
+      sum += component.delay;
+  });
+  return sum;
+}
+
 const infoCameraX = document.querySelector("#info-camera-x");
 const infoCameraY = document.querySelector("#info-camera-y");
 const infoCameraZoom = document.querySelector("#info-camera-zoom");
@@ -100,6 +108,7 @@ const infoFPS = document.querySelector("#info-fps");
 let lastFPSUpdated = Math.floor(Date.now() / 1000);
 let fpsCalculated = 0;
 let fpsCalculating = 0;
+const infoTotalCost= document.querySelector("#info-total-cost");
 function tickInfoTable() {
   infoCameraX.innerText = Math.round(camera.x * 1000) / 1000;
   infoCameraY.innerText = Math.round(camera.y * 1000) / 1000;
@@ -112,6 +121,7 @@ function tickInfoTable() {
   infoWires.innerText = wires.length;
   infoSelectedComponents.innerText = selectedObjects.length;
   infoFPS.innerText = fpsCalculated;
+  infoTotalCost.innerText = sumCost(components);
 
   fpsCalculating++;
   if (Math.floor(Date.now() / 1000) !== lastFPSUpdated) {
