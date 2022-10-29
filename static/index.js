@@ -187,6 +187,9 @@ function abstract() {
 
     let notificationCheckbox1 = document.querySelector("#notification-checkbox-1");
 
+    selectedObjects.forEach(component => component.selected = false);
+    selectedObjects.length = 0;
+
     if (!notificationCheckbox1.checked) return;
 
     appendIntegratedComponentOnList(name, integratedComponent, integratedComponent.flatten(), integratedComponent.getSignal());
