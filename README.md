@@ -12,5 +12,7 @@
 * `T` - NOT Gate
 * `O` - OR Gate
 * `P` - LED
+* `Y` - 스위치
+* `B` - 푸시버튼
 
 * `C` - 추상화
