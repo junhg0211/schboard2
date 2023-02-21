@@ -193,7 +193,7 @@ class Camera {
  * A `Line` object that works on the Camera world.
  */
 class CameraLine extends Line {
-  static MAX_WIDTH = 1;
+  static MAX_WIDTH = 10;
 
   constructor(x, y, x2, y2, color, lineWidth, camera) {
     super(x, y, x2, y2, color, lineWidth);
